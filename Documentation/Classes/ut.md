@@ -19,18 +19,14 @@ The `ut` class is designed to manage unit testing.
 |.**suite** (description : `Text`)  → `cs.ut` | Initialize a new test suite
 |.**test** ( description : `Text` {; type : `Integer`})  → `cs.ut` | Initializes a new test.<br>• The `type` option of the value is mandatory for time values in order to handle the formatted assert message correctly.<br>• If passed, it also allows to perform checks.
 |.**expect** ( value : `Variant`)  → `cs.ut` : `Object` | Sets the expected test result
-|.**equal** ( value : `Variant` \| **4D**.Function )| Performs the comparison with the expected result and generates an ASSERT with a formatted message if the values are identical.
+|.**equal** ( value : `Variant` \| **4D**.Function )| Performs the comparison with the expected result and generates an ASSERT with a formatted message if the values are identical.<br>The assert error message is automatically formulated according to this scheme:<br> `{suite}: '{test}' gives {result} when '{expected}' was expected`\**
 |.**notEqual** ( value : `Variant` \| **4D**.Function )| Performs the comparison with the expected result and generates an ASSERT with a formatted message if the values are not identical.
 |.**strict** ()  → `cs.ut`| Called before a `.equal()` or `.notEqual()` function defines that the comparison will be diacritical if relevant.
 |.**skipError** ()  → `cs.ut`| Called before a `.equal()` or `.notEqual()` function, it prevents the ASSERT from being generated even if the `test` object is filled.
 
-\*All functions that return `cs.ut` may include one call after another.
+\* All functions that return `cs.ut` may include one call after another.
 
-The assert error message is automatically formulated according to this scheme:
-
-> `{suite}: '{test}' gives {result} when '{expected}' was expected`
-
-For examples:
+\** Examples of formatted messages:
 
 * "Numeric: 'Integer' gives '1' when '2' was expected"
 * "DateTime: 'Date' gives '00/00/00' when '08/08/1958' was expected"
