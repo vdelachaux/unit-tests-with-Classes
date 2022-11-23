@@ -18,7 +18,7 @@ Function test($desc : Text; $type : Integer) : cs:C1710.ut
 		"success"; False:C215; \
 		"expected"; Null:C1517; \
 		"result"; Null:C1517; \
-		"type"; $type)
+		"type"; Count parameters:C259>=2 ? $type : Null:C1517)
 	
 	This:C1470.tests.push(This:C1470.current)
 	
@@ -27,7 +27,12 @@ Function test($desc : Text; $type : Integer) : cs:C1710.ut
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function expect($value) : cs:C1710.ut
 	
-	This:C1470.current.expected:=$value
+	If (This:C1470.current.type=Null:C1517)\
+		 || (Value type:C1509($value)=This:C1470.current.type)
+		
+		This:C1470.current.expected:=$value
+		
+	End if 
 	
 	return This:C1470
 	
@@ -48,7 +53,8 @@ Function skipError() : cs:C1710.ut
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function equal($test)
 	
-	This:C1470.assert(This:C1470._equal($test; This:C1470.current))
+	This:C1470.current.success:=This:C1470._equal($test; This:C1470.current)
+	This:C1470.assert(This:C1470.current.success)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function notEqual($test)
@@ -158,7 +164,8 @@ Function _equal($test; $current : Object) : Boolean
 	Case of 
 			
 			//______________________________________________________
-		: ($current.type=Is time:K8:8)
+		: ($current.type#Null:C1517)\
+			 && ($current.type=Is time:K8:8)
 			
 			$current.success:=Time:C179($current.expected)=Time:C179($value)
 			
@@ -234,7 +241,7 @@ Function _equal($test; $current : Object) : Boolean
 	return $current.success
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function _format($value; $valueType : Integer) : Text
+Function _format($value; $valueType) : Text
 	
 	var $type : Integer
 	$type:=Value type:C1509($value)
@@ -242,7 +249,8 @@ Function _format($value; $valueType : Integer) : Text
 	Case of 
 			
 			//______________________________________________________
-		: ($valueType=Is time:K8:8)
+		: ($valueType#Null:C1517)\
+			 && ($valueType=Is time:K8:8)
 			
 			return $value=Null:C1517 ? String:C10($value) : String:C10(Time:C179($value))
 			
@@ -277,15 +285,14 @@ Function _format($value; $valueType : Integer) : Text
 			
 			If ($value=Null:C1517)
 				
-				return "empty"
+				return "picture: empty"
 				
 			Else 
 				
-				//TODO: A better return
-				return "[picture]"
+				PICTURE PROPERTIES:C457($value; $width; $height)
+				return "picture: "+JSON Stringify:C1217(New object:C1471("size"; Picture size:C356($value); "width"; $width; "height"; $height))
 				
 			End if 
-			
 			
 			//______________________________________________________
 		: ($type=Is date:K8:7)

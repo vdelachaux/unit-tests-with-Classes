@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><preferences stamp="3">
+	<com.4d>
+		<compiler>
+			<options compilation_path="3" symbol_file="true" target="all"/>
+			<typage default_for_button="2"/>
+			<method_suffix arrays="" interprocess_arrays="" interprocess_variables="" methods="" variables=""/>
+		</compiler>
+		<server>
+			<network>
+				<options publication_name="unit-tests-with-Classes" publish_at_startup="false"/>
+			</network>
+		</server>
+	</com.4d>
+</preferences>
