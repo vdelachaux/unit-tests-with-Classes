@@ -26,7 +26,7 @@ The `ut` class is designed to manage unit testing.
 
 \*All functions that return `cs.ut` may include one call after another.
 
-The error message od the assert is automatically formated like: 
+The assert error message is automatically formulated. For example: 
 
 > `{suite}: '{test}' gives {result} when '{expected}' was expected`
 
@@ -50,8 +50,53 @@ For examples:
 ## How to
 
 ```4d
-var $ut : cs.ut$ut:=cs.ut.new()// Start a suite$ut.suite("First Suite")// Run a test with a formula$ut.test("Integer formula").expect(1+1).equal(Formula(1*2))// Run a test with value$ut.test("Integer value").expect(1+1).equal(2)$ut.test("Text").expect("HELLO WORLD").equal("hello world")// Test the suite statusIf ($ut.success)		// Use .strict()	$ut.test("Text strict").expect("Hello World").strict().equal("Hello World")		// Use .notEqual()	$ut.test("Not strictly equal object").expect(New object("foo"; "bar")).strict().notEqual(New object("foo"; "BAR"))	End if // Test collections$ut.test("Collection").expect(New collection(1; "foo"; New collection(1; "foo"; "bar"))).equal(JSON Parse("[1,\"foo\",[1,\"foo\",\"bar\"]]"))// Test pointersvar number : Integer$ut.test("Pointer").expect(->number).equal(Get pointer("number"))$ut.test("Pointer").expect(->number).notEqual(Get pointer("foo"))// Use .skipError()$ut.test("Boolean").expect(True).skipError().equal(False)ASSERT(Not($ut.success))ASSERT($ut.lastErrorText="First Suite: 'Boolean' gives 'False' when 'True' was expected")// Start a new suite$ut.suite("Second Suite")ASSERT($ut.success=False)ASSERT($ut.desc="Second Suite")ASSERT($ut.lastError=Null)ASSERT($ut.lastErrorText="")ASSERT($ut.tests.length=0)
-//...
+var $ut : cs.ut
+$ut:=cs.ut.new()
+
+// Start a suite
+$ut.suite("First Suite")
+
+// Run a test with a formula
+$ut.test("Integer formula").expect(1+1).equal(Formula(1*2))
+
+// Run a test with value
+$ut.test("Integer value").expect(1+1).equal(2)
+
+$ut.test("Text").expect("HELLO WORLD").equal("hello world")
+
+// Test the suite status
+If ($ut.success)
+	
+	// Use .strict()
+	$ut.test("Text strict").expect("Hello World").strict().equal("Hello World")
+	
+	// Use .notEqual()
+	$ut.test("Not strictly equal object").expect(New object("foo"; "bar")).strict().notEqual(New object("foo"; "BAR"))
+	
+End if 
+
+// Test collections
+$ut.test("Collection").expect(New collection(1; "foo"; New collection(1; "foo"; "bar"))).equal(JSON Parse("[1,\"foo\",[1,\"foo\",\"bar\"]]"))
+
+// Test pointers
+var number : Integer
+$ut.test("Pointer").expect(->number).equal(Get pointer("number"))
+$ut.test("Pointer").expect(->number).notEqual(Get pointer("foo"))
+
+// Use .skipError()
+$ut.test("Boolean").expect(True).skipError().equal(False)
+ASSERT(Not($ut.success))
+ASSERT($ut.lastErrorText="First Suite: 'Boolean' gives 'False' when 'True' was expected")
+
+// Start a new suite
+$ut.suite("Second Suite")
+ASSERT($ut.success=False)
+ASSERT($ut.desc="Second Suite")
+ASSERT($ut.lastError=Null)
+ASSERT($ut.lastErrorText="")
+ASSERT($ut.tests.length=0)
+
+//...
 ```
 
 
