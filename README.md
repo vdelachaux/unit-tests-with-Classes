@@ -5,7 +5,7 @@
 
 # unit-tests-with-Classes
 
-The goal of this class is to allow implement unit-tests in 4D with a minimum of code.
+The purpose of this class is to allow implementing unit tests in 4D with a minimum of code. 
 <br/>This class will be augmented according to my needs but I strongly encouraged you to enrich this project through [pull request](https://github.com/vdelachaux/unit-tests-with-Classes/pulls). This can only benefit the [4D developer community](https://discuss.4d.com)
 
 See the [documentation](Documentation/Classes/ut.md) (also available via the Explorer's documentation panel) or the method [***test_ut***](Project/Sources/Methods/test_ut.4dm) to learn how to use it.
@@ -15,6 +15,16 @@ See the [documentation](Documentation/Classes/ut.md) (also available via the Exp
 ## Code sample
 
 ```4d
-var $ut : cs.ut$ut:=cs.ut.new()$ut.suite("First Suite")$ut.test("Integer formula").expect(1+1).equal(Formula(1*2))
-If ($ut.success)		$ut.test("Text strict").expect("Hello World").strict().equal("Hello World")	$ut.test("Not strictly equal object").expect(New object("foo"; "bar")).strict().notEqual(New object("foo"; "BAR"))
-	$ut.test("Boolean").expect(True).skipError().equal(False)   ASSERT(Not($ut.success))   ASSERT($ut.lastErrorText="First Suite: 'Boolean' gives 'False' when 'True' was expected")End if ```
+var $ut : cs.ut
+$ut:=cs.ut.new()
+
+$ut.suite("First Suite")
+$ut.test("Integer formula").expect(1+1).equal(Formula(1*2))
+If ($ut.success)	
+   $ut.test("Text strict").expect("Hello World").strict().equal("Hello World")
+   $ut.test("Not strictly equal object").expect(New object("foo"; "bar")).strict().notEqual(New object("foo"; "BAR"))
+   $ut.test("Boolean").expect(True).skipError().equal(False)
+   ASSERT(Not($ut.success))
+   ASSERT($ut.lastErrorText="First Suite: 'Boolean' gives 'False' when 'True' was expected")
+End if 
+```
