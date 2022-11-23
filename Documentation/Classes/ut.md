@@ -26,7 +26,7 @@ The `ut` class is designed to manage unit testing.
 
 \*All functions that return `cs.ut` may include one call after another.
 
-The assert error message is automatically formulated. For example: 
+The assert error message is automatically formulated according to this scheme:
 
 > `{suite}: '{test}' gives {result} when '{expected}' was expected`
 
