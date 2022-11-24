@@ -5,7 +5,7 @@ Class constructor
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function suite($desc : Text) : cs:C1710.ut
 	
-	This:C1470.desc:=$desc
+	This:C1470.desc:=(Length:C16($desc)=0) ? "No name" : $desc
 	This:C1470.tests:=New collection:C1472
 	
 	return This:C1470
@@ -44,9 +44,33 @@ Function strict() : cs:C1710.ut
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function skipError() : cs:C1710.ut
+Function noAssert() : cs:C1710.ut
 	
-	This:C1470.current.skipError:=True:C214
+	This:C1470.current.noAssert:=True:C214
+	
+	return This:C1470
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function macOS() : cs:C1710.ut
+	
+	This:C1470.current.os:=This:C1470.current.os || New collection:C1472
+	This:C1470.current.os.push("macOS")
+	
+	return This:C1470
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function Windows() : cs:C1710.ut
+	
+	This:C1470.current.os:=This:C1470.current.os || New collection:C1472
+	This:C1470.current.os.push("Windows")
+	
+	return This:C1470
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function Linux() : cs:C1710.ut
+	
+	This:C1470.current.os:=This:C1470.current.os || New collection:C1472
+	This:C1470.current.os.push("Linux")
 	
 	return This:C1470
 	
@@ -54,51 +78,13 @@ Function skipError() : cs:C1710.ut
 Function equal($test)
 	
 	This:C1470.current.success:=This:C1470._equal($test; This:C1470.current)
-	This:C1470.assert(This:C1470.current.success)
+	This:C1470._assert(This:C1470.current.success)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function notEqual($test)
 	
 	This:C1470.current.success:=Not:C34(This:C1470._equal($test; This:C1470.current))
-	This:C1470.assert(This:C1470.current.success)
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function assert($assertion : Boolean) : Boolean
-	
-	var $expected; $result : Text
-	var $current : Object
-	
-	$current:=This:C1470.current
-	$assertion:=Count parameters:C259>=1 ? $assertion : $current.success
-	
-	If (Not:C34($assertion))
-		
-		$result:=This:C1470._format($current.result; $current.type)
-		$expected:=This:C1470._format($current.expected; $current.type)
-		$current.error:=This:C1470.desc+": '"+$current.desc+"' gives '"+$result+"' when '"+$expected+"' was expected"
-		
-		If (Bool:C1537($current.skipError))
-			
-			$current.skipError:=False:C215
-			
-		Else 
-			
-			ASSERT:C1129($assertion; $current.error)
-			
-		End if 
-		
-	Else 
-		
-		If (Bool:C1537($current.skipError))
-			
-			$current.skipError:=False:C215
-			
-		Else 
-			
-			ASSERT:C1129($assertion)
-			
-		End if 
-	End if 
+	This:C1470._assert(This:C1470.current.success)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function get success() : Boolean
@@ -120,26 +106,6 @@ Function get lastErrorText() : Text
 	return (This:C1470.tests.length>0) ? This:C1470.tests.copy().query("success = false").pop().error : ""
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function before($todo : 4D:C1709.Function) : cs:C1710.ut
-	
-	//TODO: To do
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function after($todo : 4D:C1709.Function) : cs:C1710.ut
-	
-	//TODO: To do
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function beforeEach($todo : 4D:C1709.Function) : cs:C1710.ut
-	
-	//TODO: To do
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function afterEach($todo : 4D:C1709.Function) : cs:C1710.ut
-	
-	//TODO: To do
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function _equal($test; $current : Object) : Boolean
 	
 	var $mask : Picture
@@ -158,6 +124,34 @@ Function _equal($test; $current : Object) : Boolean
 	End if 
 	
 	$current.result:=$value
+	
+	Case of 
+			
+			//______________________________________________________
+		: ($current.os=Null:C1517)
+			
+			// <NOTHING MORE TO DO>
+			
+			//______________________________________________________
+		: (Is macOS:C1572 && ($current.os.indexOf("macOS")=-1))
+			
+			$current.bypassed:="Skipped on macOS"
+			return True:C214
+			
+			//______________________________________________________
+		: (Is Windows:C1573 && ($current.os.indexOf("Windows")=-1))
+			
+			$current.bypassed:="Skipped on Windows"
+			return True:C214
+			
+			//______________________________________________________
+		: (Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572) & ($current.os.indexOf("Linux")=-1))
+			
+			$current.bypassed:="Skipped on Linux"
+			return True:C214
+			
+			//______________________________________________________
+	End case 
 	
 	$type:=Value type:C1509($value)
 	
@@ -229,6 +223,19 @@ Function _equal($test; $current : Object) : Boolean
 			$current.success:=Equal pictures:C1196($current.expected; $value; $mask)
 			
 			//______________________________________________________
+		: ($type=Is pointer:K8:14)
+			
+			If (Is nil pointer:C315($value))
+				
+				$current.success:=Is nil pointer:C315($current.expected)
+				
+			Else 
+				
+				$current.success:=$current.expected=$value
+				
+			End if 
+			
+			//______________________________________________________
 		Else 
 			
 			$current.success:=$current.expected=$value
@@ -236,9 +243,46 @@ Function _equal($test; $current : Object) : Boolean
 			//______________________________________________________
 	End case 
 	
-	$current.strict:=False:C215
-	
 	return $current.success
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function _assert($assertion : Boolean) : Boolean
+	
+	var $expected; $result : Text
+	var $current : Object
+	
+	$current:=This:C1470.current
+	$assertion:=Count parameters:C259>=1 ? $assertion : $current.success
+	
+	If (Not:C34($assertion))
+		
+		$result:=This:C1470._format($current.result; $current.type)
+		$expected:=This:C1470._format($current.expected; $current.type)
+		
+		$current.error:=This:C1470.desc+": '"+$current.desc+"' gives '"+$result+"' when '"+$expected+"' was expected"
+		
+		If (Bool:C1537($current.noAssert))
+			
+			$current.noAssert:=False:C215
+			
+		Else 
+			
+			ASSERT:C1129($assertion; $current.error)
+			
+		End if 
+		
+	Else 
+		
+		If (Bool:C1537($current.noAssert))
+			
+			$current.noAssert:=False:C215
+			
+		Else 
+			
+			ASSERT:C1129($assertion)
+			
+		End if 
+	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function _format($value; $valueType) : Text
@@ -253,6 +297,52 @@ Function _format($value; $valueType) : Text
 			 && ($valueType=Is time:K8:8)
 			
 			return $value=Null:C1517 ? String:C10($value) : String:C10(Time:C179($value))
+			
+			//______________________________________________________
+		: ($valueType#Null:C1517)\
+			 && ($valueType=Is pointer:K8:14)
+			
+			If ($type=Is null:K8:31)
+				
+				return "NIL pointer"
+				
+			End if 
+			
+			var $var : Text
+			var $table; $field : Integer
+			RESOLVE POINTER:C394($value; $var; $table; $field)
+			
+			If (Length:C16($var)=0)
+				
+				If ($table=0) & ($field=0)
+					
+					return "NIL pointer"
+					
+				End if 
+				
+				If ($field=0)
+					
+					return "->["+Table name:C256($table)+"]"  // Table
+					
+				End if 
+				
+				return "->["+Table name:C256($table)+"]"+Field name:C257($table; $field)  // Field
+				
+			End if 
+			
+			If ($table=-1) & ($field=-1)
+				
+				return "->"+$var  // Variable or array
+				
+			End if 
+			
+			If ($field=-1)
+				
+				return "->"+$var+"{"+String:C10($table)+"}"  // Element of an array
+				
+			End if 
+			
+			return "->"+$var+"{"+String:C10($table)+"}{"+String:C10($field)+"}"  // Element of 2D array
 			
 			//______________________________________________________
 		: ($type=Is null:K8:31)
@@ -289,6 +379,7 @@ Function _format($value; $valueType) : Text
 				
 			Else 
 				
+				var $height; $width : Integer
 				PICTURE PROPERTIES:C457($value; $width; $height)
 				return "picture: "+JSON Stringify:C1217(New object:C1471("size"; Picture size:C356($value); "width"; $width; "height"; $height))
 				
@@ -303,14 +394,6 @@ Function _format($value; $valueType) : Text
 		: ($type=Is time:K8:8)
 			
 			return $value=Null:C1517 ? String:C10($value) : String:C10(Time:C179($value))
-			
-			//______________________________________________________
-		: ($type=Is pointer:K8:14)
-			
-			var $var : Text
-			var $table; $field : Integer
-			RESOLVE POINTER:C394($value; $var; $table; $field)
-			return (Length:C16($var)=0) ? "nil" : "->"+$var
 			
 			//______________________________________________________
 	End case 

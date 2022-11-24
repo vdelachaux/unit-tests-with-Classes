@@ -7,7 +7,7 @@ var $ut : cs:C1710.ut
 $ut:=cs:C1710.ut.new()
 
 ASSERT:C1129($ut.success=False:C215)
-ASSERT:C1129($ut.desc="")
+ASSERT:C1129($ut.desc="No name")
 ASSERT:C1129($ut.lastError=Null:C1517)
 ASSERT:C1129($ut.lastErrorText="")
 ASSERT:C1129($ut.tests.length=0)
@@ -77,8 +77,8 @@ $ut.test("Collection value").expect($expected).equal($c)
 
 var number : Integer
 $expected:=->number
-$ut.test("Pointer formula").expect($expected).equal(Formula:C1597(Get pointer:C304("number")))
-$ut.test("Pointer value").expect($expected).equal(Get pointer:C304("number"))
+$ut.test("Pointer formula"; Is pointer:K8:14).expect($expected).equal(Formula:C1597(Get pointer:C304("number")))
+$ut.test("Pointer value"; Is pointer:K8:14).expect($expected).equal(Get pointer:C304("number"))
 
 
 ASSERT:C1129($ut.success)
@@ -114,66 +114,73 @@ $ut.test("Picture").expect($thumbnail).notEqual($empty)
 $ut.test("Date").expect(Current date:C33).notEqual(Current date:C33+1)
 $ut.test("Object").expect(New object:C1471).notEqual(Null:C1517)
 $ut.test("Collection").expect(New collection:C1472).notEqual(Null:C1517)
-$ut.test("Pointer").expect(->number).notEqual(Get pointer:C304("foo"))
+$ut.test("Pointer"; Is pointer:K8:14).expect(->number).notEqual(Get pointer:C304("foo"))
 
 //mark:Time
 $ut.test("Time"; Is time:K8:8).expect(Current time:C178).notEqual(Current time:C178+1)
 
 $ut.test("Not strictly equal object").expect(New object:C1471("foo"; "bar")).strict().notEqual(New object:C1471("foo"; "BAR"))
 
-//MARK:-skipError()
-$ut.suite("skipError")
+//MARK:-noAssert()
+$ut.suite("noAssert")
 
-$ut.test("Numeric").expect(2).skipError().equal(1)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Numeric' gives '1' when '2' was expected")
+$ut.test("Numeric").expect(2).noAssert().equal(1)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Numeric' gives '1' when '2' was expected")
 
-$ut.test("Null").expect(Null:C1517).skipError().equal(New object:C1471)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Null' gives '{}' when 'null' was expected")
+$ut.test("Null").expect(Null:C1517).noAssert().equal(New object:C1471)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Null' gives '{}' when 'null' was expected")
 
-$ut.test("Text").expect("hello world").skipError().equal("hello")
-ASSERT:C1129($ut.lastErrorText="skipError: 'Text' gives 'hello' when 'hello world' was expected")
+$ut.test("Text").expect("hello world").noAssert().equal("hello")
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Text' gives 'hello' when 'hello world' was expected")
 
-$ut.test("Boolean").expect(True:C214).skipError().equal(False:C215)
+$ut.test("Boolean").expect(True:C214).noAssert().equal(False:C215)
 ASSERT:C1129(Not:C34($ut.success))
-ASSERT:C1129($ut.lastErrorText="skipError: 'Boolean' gives 'False' when 'True' was expected")
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Boolean' gives 'False' when 'True' was expected")
 
 var $empty : Picture
-$ut.test("Picture").expect($thumbnail).skipError().equal($empty)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Picture' gives 'picture: empty' when 'picture: {\"size\":166,\"width\":12,\"height\":12}' was expected")
+$ut.test("Picture").expect($thumbnail).noAssert().equal($empty)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Picture' gives 'picture: empty' when 'picture: {\"size\":166,\"width\":12,\"height\":12}' was expected")
 
 //FIXME:Manage system's settings
-$ut.test("Date").expect(!1958-08-08!)\
-.skipError().equal(!00-00-00!)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Date' gives '00/00/00' when '08/08/1958' was expected")
+$ut.test("Date").expect(!1958-08-08!).noAssert().equal(!00-00-00!)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Date' gives '00/00/00' when '08/08/1958' was expected")
 
-$ut.test("Time"; Is time:K8:8).expect(?00:00:00?)\
-.skipError().equal(?01:01:01?)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Time' gives '01:01:01' when '00:00:00' was expected")
+$ut.test("Time"; Is time:K8:8).expect(?00:00:00?).noAssert().equal(?01:01:01?)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Time' gives '01:01:01' when '00:00:00' was expected")
 
-$ut.test("Object").expect(New object:C1471)\
-.skipError().equal(Null:C1517)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Object' gives 'null' when '{}' was expected")
+$ut.test("Object").expect(New object:C1471).noAssert().equal(Null:C1517)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Object' gives 'null' when '{}' was expected")
 
-$ut.test("Collection")\
-.expect(New collection:C1472).skipError().equal(Null:C1517)
-ASSERT:C1129($ut.lastErrorText="skipError: 'Collection' gives 'null' when '[]' was expected")
+$ut.test("Collection").expect(New collection:C1472).noAssert().equal(Null:C1517)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Collection' gives 'null' when '[]' was expected")
 
-$ut.test("Pointer").expect(->number)\
-.skipError().equal(Get pointer:C304("foo"))
-ASSERT:C1129($ut.lastErrorText="skipError: 'Pointer' gives '->foo' when '->number' was expected")
+$ut.test("Pointer"; Is pointer:K8:14).expect(->number).noAssert().equal(Get pointer:C304("foo"))
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Pointer' gives '->foo' when '->number' was expected")
+
+var $ptr : Pointer
+$ut.test("Pointer"; Is pointer:K8:14).expect(->number).noAssert().equal($ptr)
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Pointer' gives 'NIL pointer' when '->number' was expected")
 
 $ut.test("Not strictly equal text").expect("Hello World")\
-.skipError().strict().equal("hello world")
-ASSERT:C1129($ut.lastErrorText="skipError: 'Not strictly equal text' gives 'hello world' when 'Hello World' was expected")
+.noAssert().strict().equal("hello world")
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Not strictly equal text' gives 'hello world' when 'Hello World' was expected")
 
 $ut.test("Not strictly equal object").expect(New object:C1471("foo"; "bar"))\
-.skipError().strict().equal(New object:C1471("foo"; "BAR"))
-ASSERT:C1129($ut.lastErrorText="skipError: 'Not strictly equal object' gives '{\"foo\":\"BAR\"}' when '{\"foo\":\"bar\"}' was expected")
+.noAssert().strict().equal(New object:C1471("foo"; "BAR"))
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Not strictly equal object' gives '{\"foo\":\"BAR\"}' when '{\"foo\":\"bar\"}' was expected")
 
 $ut.test("Not strictly equal collection")\
 .expect(New collection:C1472(1; "foo"; New collection:C1472(1; "foo"; "bar")))\
-.skipError().strict().equal(New collection:C1472(1; "foo"; New collection:C1472(1; "foo"; "BAR")))
-ASSERT:C1129($ut.lastErrorText="skipError: 'Not strictly equal collection' gives '[1,\"foo\",[1,\"foo\",\"BAR\"]]' when '[1,\"foo\",[1,\"foo\",\"bar\"]]' was expected")
+.noAssert().strict().equal(New collection:C1472(1; "foo"; New collection:C1472(1; "foo"; "BAR")))
+ASSERT:C1129($ut.lastErrorText="noAssert: 'Not strictly equal collection' gives '[1,\"foo\",[1,\"foo\",\"BAR\"]]' when '[1,\"foo\",[1,\"foo\",\"bar\"]]' was expected")
+
+//MARK:OS
+$ut.suite("OS")
+
+$ut.test("Only on macOS").macOS().expect(True:C214).equal(Is macOS:C1572)
+$ut.test("Only on Windows").Windows().expect(True:C214).equal(Is Windows:C1573)
+$ut.test("Only on Linux").Linux().expect(True:C214).equal(Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572))
+$ut.test("macOS & Windows").macOS().Windows().expect(True:C214).equal(True:C214)
 
 var $ƒ : 4D:C1709.Function
 $ƒ:=Structure file:C489=Structure file:C489(*) ? Formula:C1597(BEEP:C151) : Formula:C1597(IDLE:C311)
