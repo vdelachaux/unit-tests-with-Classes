@@ -63,6 +63,24 @@ Function notEqual($test)
 	This:C1470.assert(This:C1470.current.success)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function beTrue()
+	This:C1470.equal(True:C214)
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function beFalse()
+	This:C1470.equal(False:C215)
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function beNull()
+	This:C1470.equal(Null:C1517)
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function beEmpty()
+	
+	This:C1470.current.success:=Not:C34(This:C1470._beEmpty(This:C1470.current))
+	This:C1470.assert(This:C1470.current.success)
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function assert($assertion : Boolean) : Boolean
 	
 	var $expected; $result : Text
@@ -237,6 +255,46 @@ Function _equal($test; $current : Object) : Boolean
 	End case 
 	
 	$current.strict:=False:C215
+	
+	return $current.success
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function _beEmpty($current : Object) : Boolean
+	
+	Case of 
+			
+			//______________________________________________________
+		: ($current.type=Null:C1517)
+			
+			$current.success:=True:C214
+			
+			//______________________________________________________
+		: ($current.type=Is text:K8:3)
+			
+			$current.success:=Length:C16($current.expected)=0
+			
+			//______________________________________________________
+		: ($current.type=Is object:K8:27)
+			
+			$current.success:=OB Is empty:C1297($current.expected)
+			
+			//______________________________________________________
+		: ($current.type=Is collection:K8:32)
+			
+			$current.success:=$current.expected.length=0
+			
+			//______________________________________________________
+		: ($current.type=Is picture:K8:10)
+			
+			$current.success:=Picture size:C356($current.expected)=0
+			
+			//______________________________________________________
+		Else 
+			
+			$current.success:=False:C215
+			
+			//______________________________________________________
+	End case 
 	
 	return $current.success
 	
