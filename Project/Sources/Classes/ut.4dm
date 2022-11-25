@@ -322,7 +322,7 @@ Function toLength($test; $length : Integer)
 			//______________________________________________________
 		Else 
 			
-			$current.error:=This:C1470.desc+": '"+$current.desc+": toLength() can't be applied to the type "+This:C1470[""].types[$type]
+			$current.error:=This:C1470.desc+": '"+$current.desc+"': toLength() can't be applied to the type "+This:C1470[""].types[$type]
 			This:C1470._resume($current)
 			
 			return 

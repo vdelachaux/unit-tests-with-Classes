@@ -79,7 +79,7 @@ Some examples:
 >* "test 1: 'is not non Null' gives 'null' when 'not null' was expected")
 >* "test 1: 'is not empty blob: as returned an empty BLOB"
 >* "Length: 'Text length' gives '11' when '12' was expected"
->* "Length: 'invalid target: toLength() can't be applied to the type Object"
+>* "Length: 'invalid target': toLength() can't be applied to the type Object"
 
 ## <a name="howTo">How to</a>
 
