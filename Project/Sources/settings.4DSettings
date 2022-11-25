@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><preferences stamp="3">
+<?xml version="1.0" encoding="UTF-8"?><preferences stamp="4">
 	<com.4d>
 		<compiler>
 			<options compilation_path="3" symbol_file="true" target="all"/>
@@ -10,5 +10,6 @@
 				<options publication_name="unit-tests-with-Classes" publish_at_startup="false"/>
 			</network>
 		</server>
+		<general execute_host_database_event="true"/>
 	</com.4d>
 </preferences>

@@ -9,23 +9,47 @@ The `ut` class is designed to manage unit testing.
 |---------|:----:|------|
 |**.desc**|Text|The description of the test suite
 |**.tests**|Collection|The collection of the executed tests
+|**.testNumber**|Integer|The number of tests performed
 |**.success**|Boolean|The status of the current test suite
+|**.lastTest**|[Test object](#testObject)|The last test performed
+|**.errorNumber**|Integer|The number of failed tests performed
 |**.lastError**|[Test object](#testObject)|The last failed test
 |**.lastErrorText**|Text|The last failed test error description
 
-### Functions
-|Function\*|Action|
-|--------|------|  
-|.**suite** (description : `Text`)  → `cs.ut` | Initialize a new test suite.
-|.**test** ( description : `Text` {; type : `Integer`})  → `cs.ut` | Initializes a new test.<br>• The optional `type` parameter is only mandatory for _Time_ & _Pointer_ values in order to handle the formatted assert message correctly.
-|.**expect** ( value)  → `cs.ut` : `Object` | Sets the expected test result.
-|.**equal** ( value \| **4D**.Function )| Performs the comparison with the expected result and generates an ASSERT with a [formatted message](#formattedMessages) if the values are not identical.
-|.**notEqual** ( value \| **4D**.Function )| Performs the comparison with the expected result and generates an ASSERT with a [formatted message](#formattedMessages) if the values are identical.
-|.**strict** ()  → `cs.ut`| Called before a `.equal()` or `.notEqual()` function defines that the comparison will be diacritical if relevant.
-|.**noAssert** ()  → `cs.ut`| Called before a `.equal()` or `.notEqual()` function, it prevents the ASSERT from being generated even if the [Test object](#testObject) is filled.
-|.**macOS** ()  → `cs.ut`<br>.**Windows** ()  → `cs.ut`<br>.**Linux** ()  → `cs.ut`| Called before a `.equal()` or `.notEqual()` function reserves the execution to a platform.<br>• If a test is ignored on a platform, the [Test object](#testObject) object mentions it.<br>• You can specify more than one platform by writing for example `.macOS().Linux()`
+## Functions
 
-\* All functions that return `cs.ut` may include one call after another. See [How to](#howTo)
+### Definition
+
+All functions returns `cs.ut` & may include one call after another. See [How to](#howTo)
+
+|Function|Action|
+|--------|------|  
+|.**suite**(description:`Text`)  → `cs.ut` | Initialize a new test suite.
+|.**test**(description:`Text`{;type:`Integer`})→`cs.ut` | Initializes a new test.<br>• The optional `type` parameter is only mandatory for _Time_ & _Pointer_ values in order to handle the formatted assert message correctly.
+|.**expect**(value)→`cs.ut`:`Object` | Sets the expected test result.
+|.**strict**()→`cs.ut`| Called before a `.equal()` or `.notEqual()` function defines that the comparison will be diacritical if relevant.
+|.**noAssert**()→`cs.ut`| Called before a `.equal()` or `.notEqual()` function, it prevents the ASSERT from being generated even if the [Test object](#testObject) is filled.
+|.**macOS**()→`cs.ut`<br>.**Windows** ()  → `cs.ut`<br>.**Linux** ()  → `cs.ut`| Called before a `.equal()` or `.notEqual()` function reserves the execution to a platform.<br>• If a test is ignored on a platform, the [Test object](#testObject) object mentions it.<br>• You can specify more than one platform by writing for example `.macOS().Linux()`
+
+
+### Execution
+
+`toTest` can be a value of any types or a **4D**.Function returning a value, in which case it will be evaluated during execution.
+
+|Function|Action|
+|--------|------|  
+|.**equal**(`toTest`)| Performs the comparison of the `toTest` result with the expected result and generates an **ASSERT** with a [formatted message](#formattedMessages) if the values are not identical.
+|.**notEqual**(`toTest`)| Performs the comparison of the `toTest` result with the expected result and generates an **ASSERT** with a [formatted message](#formattedMessages) if the values are identical.
+|.**isTrue**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is not **True**.
+|.**isFalse**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is not **False**.
+|.**isNull**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is not **Null**.
+|.**isNotNull**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is **Null**.
+|.**isEmpty**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is not empty. **\***
+|.**isNotEmpty**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is empty. **\***
+|.**toLength**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result length is not the expected one. **\****
+
+**\*** Applies only to : Text, object, collection, picture or Blob. For other types, an **ASSERT** is generated    
+**\**** Applies only to : Text & collection. For other types, an **ASSERT** is generated
 
 ## <a name="testObject">Test object</a>
 
@@ -52,6 +76,10 @@ Some examples:
 >* "fooBar: 'Get' gives '{\"foo\":\"BAR\"}' when '{\"foo\":\"bar\"}' was expected")
 >* "Catalog: 'Get pointer' gives 'NIL pointer' when '->[Table1]Field1' was expected"
 >* "Assets: 'Application icon' gives 'picture: empty' when 'picture: {\"size\":166,\"width\":12,\"height\":12}' was expected"
+>* "test 1: 'is not non Null' gives 'null' when 'not null' was expected")
+>* "test 1: 'is not empty blob: as returned an empty BLOB"
+>* "Length: 'Text length' gives '11' when '12' was expected"
+>* "Length: 'invalid target: toLength() can't be applied to the type Object"
 
 ## <a name="howTo">How to</a>
 
@@ -95,10 +123,22 @@ var number : Integer
 $ut.test("Pointer").expect(->number).equal(Get pointer("number"))
 $ut.test("Pointer").expect(->number).notEqual(Get pointer("foo"))
 
-// Use platform restriction
+$ut.test("is True").isTrue(True)
+
+$ut.test("is Null").isNull(Null)
+
+$ut.test("is empty string").isEmpty("")
+$ut.test("is empty object").isEmpty(New object)$ut.test("is empty collection").isEmpty(New collection)$ut.test("is empty picture").isEmpty($emptyPicture)
+var $blob : Blob$ut.test("is empty blob").isEmpty($blob)
+
+LONGINT TO BLOB(8858; $blob)$ut.test("is not empty blob").isNotEmpty($blob)
+
+$ut.test("Text length").expect(11).toLength("HELLO WORLD")
+
+// Set platform restriction
 $ut.test("Only on macOS").macOS().expect(True).equal(Is macOS) // This test will be skipped on Windows
 
-// Use .noAssert()
+// Prevent the display of the failed assertion
 $ut.test("Boolean").expect(True).noAssert().equal(False)
 ASSERT(Not($ut.success))
 ASSERT($ut.lastErrorText="First Suite: 'Boolean' gives 'False' when 'True' was expected")

@@ -2,7 +2,6 @@
 var $expected
 var $ut : cs:C1710.ut
 
-
 //MARK:-constructor
 $ut:=cs:C1710.ut.new()
 
@@ -80,7 +79,6 @@ $expected:=->number
 $ut.test("Pointer formula"; Is pointer:K8:14).expect($expected).equal(Formula:C1597(Get pointer:C304("number")))
 $ut.test("Pointer value"; Is pointer:K8:14).expect($expected).equal(Get pointer:C304("number"))
 
-
 ASSERT:C1129($ut.success)
 ASSERT:C1129($ut.tests.length=22)
 ASSERT:C1129($ut.lastError=Null:C1517)
@@ -109,8 +107,8 @@ $ut.test("Numeric").expect(1+1).notEqual(0)
 $ut.test("Real").expect(Pi:K30:1).notEqual(0)
 $ut.test("Null").expect(Null:C1517).notEqual(New object:C1471)
 $ut.test("Boolean").expect(True:C214).notEqual(False:C215)
-var $empty : Picture
-$ut.test("Picture").expect($thumbnail).notEqual($empty)
+var $emptyPicture : Picture
+$ut.test("Picture").expect($thumbnail).notEqual($emptyPicture)
 $ut.test("Date").expect(Current date:C33).notEqual(Current date:C33+1)
 $ut.test("Object").expect(New object:C1471).notEqual(Null:C1517)
 $ut.test("Collection").expect(New collection:C1472).notEqual(Null:C1517)
@@ -137,8 +135,8 @@ $ut.test("Boolean").expect(True:C214).noAssert().equal(False:C215)
 ASSERT:C1129(Not:C34($ut.success))
 ASSERT:C1129($ut.lastErrorText="noAssert: 'Boolean' gives 'False' when 'True' was expected")
 
-var $empty : Picture
-$ut.test("Picture").expect($thumbnail).noAssert().equal($empty)
+var $emptyPicture : Picture
+$ut.test("Picture").expect($thumbnail).noAssert().equal($emptyPicture)
 ASSERT:C1129($ut.lastErrorText="noAssert: 'Picture' gives 'picture: empty' when 'picture: {\"size\":166,\"width\":12,\"height\":12}' was expected")
 
 //FIXME:Manage system's settings
@@ -174,7 +172,7 @@ $ut.test("Not strictly equal collection")\
 .noAssert().strict().equal(New collection:C1472(1; "foo"; New collection:C1472(1; "foo"; "BAR")))
 ASSERT:C1129($ut.lastErrorText="noAssert: 'Not strictly equal collection' gives '[1,\"foo\",[1,\"foo\",\"BAR\"]]' when '[1,\"foo\",[1,\"foo\",\"bar\"]]' was expected")
 
-//MARK:OS
+//MARK:-OS
 $ut.suite("OS")
 
 $ut.test("Only on macOS").macOS().expect(True:C214).equal(Is macOS:C1572)
@@ -182,6 +180,55 @@ $ut.test("Only on Windows").Windows().expect(True:C214).equal(Is Windows:C1573)
 $ut.test("Only on Linux").Linux().expect(True:C214).equal(Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572))
 $ut.test("macOS & Windows").macOS().Windows().expect(True:C214).equal(True:C214)
 
+//MARK:-isTrue
+$ut.suite("Shortcuts")
+
+$ut.test("is True").isTrue(True:C214)
+$ut.test("is not True").noAssert().isTrue(False:C215)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not True' gives 'False' when 'True' was expected")
+
+$ut.test("is False").isFalse(False:C215)
+$ut.test("is not False").noAssert().isFalse(True:C214)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not False' gives 'True' when 'False' was expected")
+
+//MARK:-isNull
+$ut.test("is Null").isNull(Null:C1517)
+$ut.test("is not Null").noAssert().isNull(New object:C1471)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not Null' gives 'not null' when 'null' was expected")
+
+$ut.test("is Not Null").isNotNull(New object:C1471)
+$ut.test("is not non Null").noAssert().isNotNull(Null:C1517)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not non Null' gives 'null' when 'not null' was expected")
+
+//MARK:-isEmpty
+$ut.test("is empty string").isEmpty("")
+$ut.test("is empty object").isEmpty(New object:C1471)
+$ut.test("is empty collection").isEmpty(New collection:C1472)
+$ut.test("is empty picture").isEmpty($emptyPicture)
+var $blob : Blob
+$ut.test("is empty blob").isEmpty($blob)
+
+LONGINT TO BLOB:C550(8858; $blob)
+$ut.test("is not empty blob").isNotEmpty($blob)
+
+$ut.test("is empty real").noAssert().isEmpty(1)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is empty real: isEmpty() can't be applied to the type Real")
+$ut.test("is empty Boolean").noAssert().isEmpty(False:C215)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is empty Boolean: isEmpty() can't be applied to the type Boolean")
+
+SET BLOB SIZE:C606($blob; 0)
+$ut.test("is not a non-empty blob").noAssert().isNotEmpty($blob)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not a non-empty blob: as returned an empty BLOB")
+
+//MARK:-toLength
+$ut.test("Text length").expect(11).toLength("HELLO WORLD")
+$ut.test("Collection length").expect(5).toLength(New collection:C1472(1; 2; 3; 4; 5))
+
+$ut.test("invalid target").expect(5).noAssert().toLength(New object:C1471)
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'invalid target: toLength() can't be applied to the type Object")
+
+
+//MARK:-
 var $ƒ : 4D:C1709.Function
 $ƒ:=Structure file:C489=Structure file:C489(*) ? Formula:C1597(BEEP:C151) : Formula:C1597(IDLE:C311)
 $ƒ.call()
