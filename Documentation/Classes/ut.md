@@ -46,10 +46,13 @@ All functions returns `cs.ut` & may include one call after another. See [How to]
 |.**isNotNull**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is **Null**.
 |.**isEmpty**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is not empty. **\***
 |.**isNotEmpty**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is empty. **\***
-|.**toLength**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result length is not the expected one. **\****
+|.**isBlank**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is not blank value.  **\****
+|.**isNotBlank**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result is a blank value. **\****
+|.**toLength**(`toTest`)| Generates an **ASSERT** with a [formatted message](#formattedMessages) if the `toTest` result length is not the expected one. **\***\**
 
-**\*** Applies only to : Text, object, collection, picture or Blob. For other types, an **ASSERT** is generated    
-**\**** Applies only to : Text & collection. For other types, an **ASSERT** is generated
+**\*** Applies only to : Text, object, collection, picture or Blob. For other types, an **ASSERT** is generated.    
+**\**** Blank values are: 0, "", 00-00-00, 00:00:00, {}, [], empty blob, a nil pointeur. For other types, an **ASSERT** is generated.   
+**\***\** Applies only to : Text & collection. For other types, an **ASSERT** is generated.
 
 ## <a name="testObject">Test object</a>
 

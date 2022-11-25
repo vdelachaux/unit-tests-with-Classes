@@ -197,7 +197,8 @@ $ut.test("is not Null").noAssert().isNull(New object:C1471)
 ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not Null' gives 'not null' when 'null' was expected")
 
 $ut.test("is Not Null").isNotNull(New object:C1471)
-$ut.test("is not non Null").noAssert().isNotNull(Null:C1517)
+var $null
+$ut.test("is not non Null").noAssert().isNotNull($null)
 ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is not non Null' gives 'null' when 'not null' was expected")
 
 //MARK:-isEmpty
@@ -225,8 +226,31 @@ $ut.test("Text length").expect(11).toLength("HELLO WORLD")
 $ut.test("Collection length").expect(5).toLength(New collection:C1472(1; 2; 3; 4; 5))
 
 $ut.test("invalid target").expect(5).noAssert().toLength(New object:C1471)
-ASSERT:C1129($ut.lastErrorText="Shortcuts: 'invalid target: toLength() can't be applied to the type Object")
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'invalid target': toLength() can't be applied to the type Object")
 
+//MARK:-isBlank
+$ut.test("is blank text").isBlank("")
+$ut.test("is blank date").isBlank(Date:C102("00-00-00"))
+$ut.test("is blank time").isBlank(Time:C179(0))
+$ut.test("is blank picture").isBlank($emptyPicture)
+$ut.test("is blank blob").isBlank($blob)
+$ut.test("is blank null").isBlank(Null:C1517)
+$ut.test("is blank object").isBlank(New object:C1471)
+$ut.test("is blank collection").isBlank(New collection:C1472)
+$ut.test("is blank number").isBlank(0)
+$ut.test("is blank pointer").isBlank($ptr)
+
+//MARK:-isNotBlank
+$ut.test("is not blank text").isNotBlank("foo")
+$ut.test("is not blank date").isNotBlank(Current date:C33)
+$ut.test("is not blank time").isNotBlank(Current time:C178)
+$ut.test("is not blank picture").isNotBlank($thumbnail)
+LONGINT TO BLOB:C550(8858; $blob)
+$ut.test("is not blank blob").isNotBlank($blob)
+$ut.test("is not blank object").isNotBlank(New object:C1471("foo"; "bar"))
+$ut.test("is not blank collection").isNotBlank(New collection:C1472("foo"; "bar"))
+$ut.test("is not blank number").isNotBlank(Pi:K30:1)
+$ut.test("is not blank pointeur").isNotBlank(->number)
 
 //MARK:-
 var $ƒ : 4D:C1709.Function
