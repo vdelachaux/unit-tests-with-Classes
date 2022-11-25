@@ -23,8 +23,10 @@ $ut.test("Integer formula").expect(1+1).equal(Formula(1*2))
 If ($ut.success)	
    $ut.test("Text strict").expect("Hello World").strict().equal("Hello World")
    $ut.test("Not strictly equal object").expect(New object("foo"; "bar")).strict().notEqual(New object("foo"; "BAR"))
-   $ut.test("Boolean").expect(True).skipError().equal(False)
+   $ut.test("Boolean").expect(True).noAssert().equal(False)
    ASSERT(Not($ut.success))
    ASSERT($ut.lastErrorText="First Suite: 'Boolean' gives 'False' when 'True' was expected")
 End if 
 ```
+
+More sample code into the [class ut documentation](Documentation/Classes/ut.md) & the method [***test_ut***](Project/Sources/Methods/test_ut.4dm)
