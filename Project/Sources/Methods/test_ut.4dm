@@ -177,8 +177,7 @@ $ut.suite("OS")
 
 $ut.test("Only on macOS").macOS().expect(True:C214).equal(Is macOS:C1572)
 $ut.test("Only on Windows").Windows().expect(True:C214).equal(Is Windows:C1573)
-$ut.test("Only on Linux").Linux().expect(True:C214).equal(Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572))
-$ut.test("macOS & Windows").macOS().Windows().expect(True:C214).equal(True:C214)
+$ut.test("Not on Linux").macOS().Windows().isTrue(Is macOS:C1572 | Is Windows:C1573)
 
 //MARK:-isTrue
 $ut.suite("Shortcuts")
@@ -213,9 +212,9 @@ LONGINT TO BLOB:C550(8858; $blob)
 $ut.test("is not empty blob").isNotEmpty($blob)
 
 $ut.test("is empty real").noAssert().isEmpty(1)
-ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is empty real: isEmpty() can't be applied to the type Real")
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is empty real: isEmpty/NotEmpty can't be applied to the type Real")
 $ut.test("is empty Boolean").noAssert().isEmpty(False:C215)
-ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is empty Boolean: isEmpty() can't be applied to the type Boolean")
+ASSERT:C1129($ut.lastErrorText="Shortcuts: 'is empty Boolean: isEmpty/NotEmpty can't be applied to the type Boolean")
 
 SET BLOB SIZE:C606($blob; 0)
 $ut.test("is not a non-empty blob").noAssert().isNotEmpty($blob)
@@ -228,29 +227,31 @@ $ut.test("Collection length").expect(5).toLength(New collection:C1472(1; 2; 3; 4
 $ut.test("invalid target").expect(5).noAssert().toLength(New object:C1471)
 ASSERT:C1129($ut.lastErrorText="Shortcuts: 'invalid target': toLength() can't be applied to the type Object")
 
-//MARK:-isBlank
-$ut.test("is blank text").isBlank("")
-$ut.test("is blank date").isBlank(Date:C102("00-00-00"))
-$ut.test("is blank time").isBlank(Time:C179(0))
-$ut.test("is blank picture").isBlank($emptyPicture)
-$ut.test("is blank blob").isBlank($blob)
-$ut.test("is blank null").isBlank(Null:C1517)
-$ut.test("is blank object").isBlank(New object:C1471)
-$ut.test("is blank collection").isBlank(New collection:C1472)
-$ut.test("is blank number").isBlank(0)
-$ut.test("is blank pointer").isBlank($ptr)
+//MARK:-isFalsy
+$ut.test("falsy boolean").isFalsy(False:C215)
+$ut.test("falsy text").isFalsy("")
+$ut.test("falsy date").isFalsy(Date:C102("00-00-00"))
+$ut.test("falsy time").isFalsy(Time:C179(0))
+$ut.test("falsy picture").isFalsy($emptyPicture)
+$ut.test("falsy blob").isFalsy($blob)
+$ut.test("falsy null").isFalsy(Null:C1517)
+$ut.test("falsy object").isFalsy(New object:C1471)
+$ut.test("falsy collection").isFalsy(New collection:C1472)
+$ut.test("falsy number").isFalsy(0)  // 0 is falsy !
+$ut.test("falsy pointer").isFalsy($ptr)
 
-//MARK:-isNotBlank
-$ut.test("is not blank text").isNotBlank("foo")
-$ut.test("is not blank date").isNotBlank(Current date:C33)
-$ut.test("is not blank time").isNotBlank(Current time:C178)
-$ut.test("is not blank picture").isNotBlank($thumbnail)
+//MARK:-isTruthy
+$ut.test("truthy boolean").isTruthy(True:C214)
+$ut.test("truthy text").isTruthy("foo")
+$ut.test("truthy date").isTruthy(Current date:C33)
+$ut.test("truthy time").isTruthy(Current time:C178)
+$ut.test("truthy picture").isTruthy($thumbnail)
 LONGINT TO BLOB:C550(8858; $blob)
-$ut.test("is not blank blob").isNotBlank($blob)
-$ut.test("is not blank object").isNotBlank(New object:C1471("foo"; "bar"))
-$ut.test("is not blank collection").isNotBlank(New collection:C1472("foo"; "bar"))
-$ut.test("is not blank number").isNotBlank(Pi:K30:1)
-$ut.test("is not blank pointeur").isNotBlank(->number)
+$ut.test("truthy blob").isTruthy($blob)
+$ut.test("truthy object").isTruthy(New object:C1471("foo"; "bar"))
+$ut.test("truthy collection").isTruthy(New collection:C1472("foo"; "bar"))
+$ut.test("truthy number").isTruthy(Pi:K30:1)
+$ut.test("truthy pointeur").isTruthy(->number)
 
 //MARK:-
 var $ƒ : 4D:C1709.Function
