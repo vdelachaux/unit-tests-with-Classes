@@ -29,4 +29,4 @@ If ($ut.success)
 End if 
 ```
 
-More sample code into the [class ut documentation](Documentation/Classes/ut.md) & the method [***test_ut***](Project/Sources/Methods/test_ut.4dm)
+More sample code into the [class documentation](Documentation/Classes/ut.md) & the method [***test_ut***](Project/Sources/Methods/test_ut.4dm)
