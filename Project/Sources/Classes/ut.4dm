@@ -1,4 +1,4 @@
-Class constructor()
+Class constructor($reporter : 4D:C1709.Function)
 	
 	var $c : Collection
 	
@@ -20,6 +20,8 @@ Class constructor()
 	$c[Object array:K8:28]:="Object array"
 	
 	This:C1470[""]:=New object:C1471("types"; $c)
+	
+	This:C1470.reporter:=$reporter || Formula:C1597(ASSERT:C1129($1; $2))
 	
 	This:C1470.suite()
 	
@@ -49,31 +51,26 @@ Function test($desc : Text; $type : Integer) : cs:C1710.ut
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function expect($value) : cs:C1710.ut
 	
-	If (This:C1470.current.type=Null:C1517)\
-		 || (Value type:C1509($value)=This:C1470.current.type)
-		
-		This:C1470.current.expected:=$value
-		
-	End if 
+	This:C1470.current.expected:=This:C1470._value($value)
 	
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function strict() : cs:C1710.ut
+Function get strict() : cs:C1710.ut
 	
 	This:C1470.current.strict:=True:C214
 	
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function noAssert() : cs:C1710.ut
+Function get noReport() : cs:C1710.ut
 	
-	This:C1470.current.noAssert:=True:C214
+	This:C1470.current.noReport:=True:C214
 	
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function macOS() : cs:C1710.ut
+Function get macOS() : cs:C1710.ut
 	
 	This:C1470.current.os:=This:C1470.current.os || New collection:C1472
 	This:C1470.current.os.push("macOS")
@@ -81,7 +78,7 @@ Function macOS() : cs:C1710.ut
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function Windows() : cs:C1710.ut
+Function get Windows() : cs:C1710.ut
 	
 	This:C1470.current.os:=This:C1470.current.os || New collection:C1472
 	This:C1470.current.os.push("Windows")
@@ -89,7 +86,7 @@ Function Windows() : cs:C1710.ut
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function Linux() : cs:C1710.ut
+Function get Linux() : cs:C1710.ut
 	
 	This:C1470.current.os:=This:C1470.current.os || New collection:C1472
 	This:C1470.current.os.push("Linux")
@@ -97,16 +94,166 @@ Function Linux() : cs:C1710.ut
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function equal($test)
+Function isEqual($value)
 	
-	This:C1470.current.success:=This:C1470._equal($test; This:C1470.current)
-	This:C1470._assert(This:C1470.current.success)
+	This:C1470.current.success:=This:C1470._equal($value; This:C1470.current)
+	This:C1470._reporter(This:C1470.current.success)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function notEqual($test)
+Function isNotEqual($value)
 	
-	This:C1470.current.success:=Not:C34(This:C1470._equal($test; This:C1470.current))
-	This:C1470._assert(This:C1470.current.success)
+	This:C1470.current.success:=Not:C34(This:C1470._equal($value; This:C1470.current))
+	This:C1470._reporter(This:C1470.current.success)
+	
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function _equal($value; $test : Object) : Boolean
+	
+	var $mask : Picture
+	var $type : Integer
+	
+	$value:=This:C1470._value($value)
+	$test.result:=$value
+	
+	If (This:C1470._bypass($test))
+		
+		return True:C214  // Set the test.success to True
+		
+	End if 
+	
+	// Perform the comparison according to type
+	$type:=Value type:C1509($value)
+	
+	Case of 
+			
+			//______________________________________________________
+		: ($test.type#Null:C1517)\
+			 && ($test.type=Is time:K8:8)
+			
+			$test.success:=$test.expected=$value
+			
+			//______________________________________________________
+		: ($type=Is text:K8:3)
+			
+			If ($test.strict)
+				
+				var $expected : Text
+				var $i : Integer
+				
+				$expected:=$test.expected
+				$test.success:=(Length:C16($value)=Length:C16($expected))
+				
+				If ($test.success)
+					
+					//%W-533.1
+					//%R-
+					For ($i; 1; Length:C16($value); 1)
+						
+						$test.success:=$test.success & (Character code:C91($value[[$i]])=Character code:C91($expected[[$i]]))
+						
+						If (Not:C34($test.success))
+							
+							break
+							
+						End if 
+					End for 
+					//%R+
+					//%W+533.1
+					
+				End if 
+				
+			Else 
+				
+				$test.success:=$value=$test.expected
+				
+			End if 
+			
+			//______________________________________________________
+		: ($type=Is object:K8:27)
+			
+			If (Value type:C1509($test.expected)=Is object:K8:27)
+				
+				$test.success:=New collection:C1472($test.expected).equal(New collection:C1472($value); $test.strict ? ck diacritical:K85:3 : 0)
+				
+			End if 
+			
+			//______________________________________________________
+		: ($type=Is collection:K8:32)
+			
+			If (Value type:C1509($test.expected)=Is collection:K8:32)
+				
+				$test.success:=$test.expected.equal($value; $test.strict ? ck diacritical:K85:3 : 0)
+				
+			End if 
+			
+			//______________________________________________________
+		: ($type=Is picture:K8:10)
+			
+			// TURN AROUND ACI0103530: Equal pictures returns False if the 2 pictures are empty
+			If (Picture size:C356($test.expected)=0)\
+				 && (Picture size:C356($value)=0)
+				
+				$test.success:=True:C214
+				
+			Else 
+				
+				$test.success:=Equal pictures:C1196($test.expected; $value; $mask)
+				
+			End if 
+			
+			//______________________________________________________
+		: ($type=Is pointer:K8:14)
+			
+			If (Is nil pointer:C315($value))
+				
+				$test.success:=Is nil pointer:C315($test.expected)
+				
+			Else 
+				
+				$test.success:=$test.expected=$value
+				
+			End if 
+			
+			//______________________________________________________
+		: ($type=Is BLOB:K8:12)
+			
+			var $blob; $result : Blob
+			var $size : Integer
+			
+			$blob:=$test.expected
+			$result:=$value
+			$size:=BLOB size:C605($blob)
+			
+			If ($size=BLOB size:C605($result))
+				
+				For ($i; 0; $size-1; 1)
+					
+					If ($blob{$i}#$result{$i})
+						
+						$test.success:=False:C215
+						return $test.success
+						
+					End if 
+				End for 
+				
+				$test.success:=True:C214
+				return $test.success
+				
+			Else 
+				
+				$test.success:=False:C215
+				return $test.success
+				
+			End if 
+			
+			//______________________________________________________
+		Else 
+			
+			$test.success:=$test.expected=$value
+			
+			//______________________________________________________
+	End case 
+	
+	return $test.success
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function get success() : Boolean
@@ -143,142 +290,153 @@ Function get lastErrorText() : Text
 	return (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop().error : ""
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isTrue($test)
+Function isTrue()
 	
 	This:C1470.current.type:=Is boolean:K8:9
-	This:C1470.current.expected:=True:C214
-	This:C1470.equal(This:C1470._value($test))
+	This:C1470.isEqual(True:C214)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isFalse($test)
+Function isFalse()
 	
 	This:C1470.current.type:=Is boolean:K8:9
-	This:C1470.current.expected:=False:C215
-	This:C1470.equal(This:C1470._value($test))
+	This:C1470.isEqual(False:C215)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isNull($test)
+Function isNull($value)
 	
 	This:C1470.current.type:=Is null:K8:31
-	This:C1470.current.expected:=Null:C1517
-	This:C1470.equal(This:C1470._value($test))
+	This:C1470.isEqual(Null:C1517)
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isNotNull($test)
+Function isNotNull($value)
 	
 	This:C1470.current.type:=Is null:K8:31
-	This:C1470.current.expected:=New object:C1471  // An arbitray non null value
-	This:C1470.equal(This:C1470._value($test))
+	This:C1470.isEqual(New object:C1471)  // An arbitray non null value
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isEmpty($test)
+Function isEmpty($value)
 	
-	var $value
-	var $current : Object
+	var $test : Object
 	
-	$current:=This:C1470.current
-	$value:=This:C1470._value($test)
-	$current.result:=$value
-	$current.type:=Value type:C1509($value)
-	$current.success:=This:C1470._empty($current)
+	$value:=This:C1470._value($value)
+	$test:=This:C1470.current
+	$test.result:=$value
+	$test.type:=Value type:C1509($value)
+	$test.success:=This:C1470._empty($test)
 	
-	If ($current.error=Null:C1517) && \
-		Not:C34($current.success)
+	If ($test.error=Null:C1517) && \
+		Not:C34($test.success)
 		
-		$current.error:=This:C1470.desc+": '"+$current.desc+": as returned an non empty "+This:C1470[""].types[$current.type]
-		This:C1470._resume($current)
+		$test.error:=This:C1470.desc+": '"+$test.desc+": as returned an non empty "+This:C1470[""].types[$test.type]
+		This:C1470._resume($test)
 		
 	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isNotEmpty($test)
+Function isNotEmpty($value)
 	
-	var $value
-	var $current : Object
+	var $test : Object
 	
-	$current:=This:C1470.current
-	$value:=This:C1470._value($test)
-	$current.result:=$value
-	$current.type:=Value type:C1509($value)
-	$current.success:=Not:C34(This:C1470._empty($current))
+	$value:=This:C1470._value($value)
+	$test:=This:C1470.current
+	$test.result:=$value
+	$test.type:=Value type:C1509($value)
+	$test.success:=Not:C34(This:C1470._empty($test))
 	
-	If ($current.error=Null:C1517) && \
-		Not:C34($current.success)
+	If ($test.error=Null:C1517) && \
+		Not:C34($test.success)
 		
-		$current.error:=This:C1470.desc+": '"+$current.desc+": as returned an empty "+This:C1470[""].types[$current.type]
-		This:C1470._resume($current)
-		
-	End if 
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isFalsy($test)
-	
-	var $value
-	var $current : Object
-	
-	$current:=This:C1470.current
-	$value:=This:C1470._value($test)
-	$current.result:=$value
-	$current.type:=Value type:C1509($value)
-	$current.success:=This:C1470._falsy($current)
-	
-	If ($current.error=Null:C1517) && \
-		Not:C34($current.success)
-		
-		$current.error:=This:C1470.desc+": '"+$current.desc+": as returned a not falsy value: "+This:C1470._format($value)
-		This:C1470._resume($current)
+		$test.error:=This:C1470.desc+": '"+$test.desc+": as returned an empty "+This:C1470[""].types[$test.type]
+		This:C1470._resume($test)
 		
 	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function isTruthy($test)
+Function isFalsy($value)
 	
-	var $value
-	var $current : Object
+	var $test : Object
 	
-	$current:=This:C1470.current
-	$value:=This:C1470._value($test)
-	$current.result:=$value
-	$current.type:=Value type:C1509($value)
-	$current.success:=Not:C34(This:C1470._falsy($current))
+	$value:=This:C1470._value($value)
+	$test:=This:C1470.current
+	$test.result:=$value
+	$test.type:=Value type:C1509($value)
+	$test.success:=This:C1470._falsy($test)
 	
-	If ($current.error=Null:C1517) && \
-		Not:C34($current.success)
+	If ($test.error=Null:C1517) && \
+		Not:C34($test.success)
 		
-		$current.error:=This:C1470.desc+": '"+$current.desc+": as returned a not truthy value: "+This:C1470._format($value)
-		This:C1470._resume($current)
+		$test.error:=This:C1470.desc+": '"+$test.desc+": as returned a not falsy value: "+This:C1470._format($value)
+		This:C1470._resume($test)
 		
 	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function toLength($test; $length : Integer)
-	
-	var $type : Integer
-	var $current : Object
-	
-	$current:=This:C1470.current
-	$current.result:=This:C1470._value($test)
-	
-	$type:=Value type:C1509($current.result)
+Function _falsy($test : Object) : Boolean
 	
 	Case of 
 			
 			//______________________________________________________
-		: ($type=Is text:K8:3)
+		: ($test.result=Null:C1517)\
+			 || (Undefined:C82($test.result))
 			
-			This:C1470.equal(Length:C16($current.result))
+			return True:C214
 			
 			//______________________________________________________
-		: ($type=Is collection:K8:32)
+		: ($test.type=Is boolean:K8:9)
 			
-			$current.success:=$current.result.length=$current.expected
-			This:C1470.equal(This:C1470._value($test).length)
+			return $test.result=False:C215
+			
+			//______________________________________________________
+		: ($test.type=Is text:K8:3)
+			
+			return Length:C16($test.result)=0
+			
+			//______________________________________________________
+		: ($test.type=Is date:K8:7)
+			
+			return $test.result=!00-00-00!
+			
+			//______________________________________________________
+		: ($test.type=Is time:K8:8)
+			
+			return $test.result=?00:00:00?
+			
+			//______________________________________________________
+		: ($test.type=Is picture:K8:10)
+			
+			return Picture size:C356($test.result)=0
+			
+			//______________________________________________________
+		: ($test.type=Is BLOB:K8:12)
+			
+			return BLOB size:C605($test.result)=0
+			
+			//______________________________________________________
+		: ($test.type=Is object:K8:27)
+			
+			return OB Is empty:C1297($test.result)
+			
+			//______________________________________________________
+		: ($test.type=Is collection:K8:32)
+			
+			return $test.result.length=0
+			
+			//______________________________________________________
+		: ($test.type=Is integer:K8:5)\
+			 || ($test.type=Is real:K8:4)
+			
+			return $test.result=0
+			
+			//______________________________________________________
+		: ($test.type=Is pointer:K8:14)
+			
+			return Is nil pointer:C315($test.result)
 			
 			//______________________________________________________
 		Else 
 			
-			$current.error:=This:C1470.desc+": '"+$current.desc+"': toLength() can't be applied to the type "+This:C1470[""].types[$type]
-			This:C1470._resume($current)
+			$test.error:=This:C1470.desc+": '"+$test.desc+": isFalsy/Truthy is not managed for the type "+This:C1470[""].types[$test.type]
+			This:C1470._resume($test)
 			
 			return 
 			
@@ -286,155 +444,61 @@ Function toLength($test; $length : Integer)
 	End case 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function _equal($test; $current : Object) : Boolean
+Function isTruthy($value)
 	
-	var $mask : Picture
-	var $type : Integer
-	var $value
+	var $test : Object
 	
-	$value:=This:C1470._value($test)
-	$current.result:=$value
+	$value:=This:C1470._value($value)
+	$test:=This:C1470.current
+	$test.result:=$value
+	$test.type:=Value type:C1509($value)
+	$test.success:=Not:C34(This:C1470._falsy($test))
 	
-	If (This:C1470._bypass($current))
+	If ($test.error=Null:C1517) && \
+		Not:C34($test.success)
 		
-		return True:C214  // Set the test.success to True
+		$test.error:=This:C1470.desc+": '"+$test.desc+": as returned a not truthy value: "+This:C1470._format($value)
+		This:C1470._resume($test)
 		
 	End if 
 	
-	// Perform the comparison according to type
-	$type:=Value type:C1509($value)
+	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
+Function toLength($value; $length : Integer)
+	
+	var $type : Integer
+	var $test : Object
+	
+	$value:=This:C1470._value($value)
+	
+	$test:=This:C1470.current
+	$test.expected:=(Count parameters:C259>=2) ? $length : $test.expected
+	$test.result:=$value
+	
+	$type:=Value type:C1509($test.result)
 	
 	Case of 
 			
 			//______________________________________________________
-		: ($current.type#Null:C1517)\
-			 && ($current.type=Is time:K8:8)
-			
-			$current.success:=Time:C179($current.expected)=Time:C179($value)
-			
-			//______________________________________________________
 		: ($type=Is text:K8:3)
 			
-			If ($current.strict)
-				
-				var $expected : Text
-				var $i : Integer
-				
-				$expected:=$current.expected
-				$current.success:=(Length:C16($value)=Length:C16($expected))
-				
-				If ($current.success)
-					
-					//%W-533.1
-					//%R-
-					For ($i; 1; Length:C16($value); 1)
-						
-						$current.success:=$current.success & (Character code:C91($value[[$i]])=Character code:C91($expected[[$i]]))
-						
-						If (Not:C34($current.success))
-							
-							break
-							
-						End if 
-					End for 
-					//%R+
-					//%W+533.1
-					
-				End if 
-				
-			Else 
-				
-				$current.success:=$value=$current.expected
-				
-			End if 
-			
-			//______________________________________________________
-		: ($type=Is object:K8:27)
-			
-			If (Value type:C1509($current.expected)=Is object:K8:27)
-				
-				$current.success:=New collection:C1472($current.expected).equal(New collection:C1472($value); $current.strict ? ck diacritical:K85:3 : 0)
-				
-			End if 
+			This:C1470.isEqual(Length:C16($test.result))
 			
 			//______________________________________________________
 		: ($type=Is collection:K8:32)
 			
-			If (Value type:C1509($current.expected)=Is collection:K8:32)
-				
-				$current.success:=$current.expected.equal($value; $current.strict ? ck diacritical:K85:3 : 0)
-				
-			End if 
-			
-			//______________________________________________________
-		: ($type=Is picture:K8:10)
-			
-			// TURN AROUND ACI0103530: Equal pictures returns False if the 2 pictures are empty
-			If (Picture size:C356($current.expected)=0)\
-				 && (Picture size:C356($value)=0)
-				
-				$current.success:=True:C214
-				
-			Else 
-				
-				$current.success:=Equal pictures:C1196($current.expected; $value; $mask)
-				
-			End if 
-			
-			//______________________________________________________
-		: ($type=Is pointer:K8:14)
-			
-			If (Is nil pointer:C315($value))
-				
-				$current.success:=Is nil pointer:C315($current.expected)
-				
-			Else 
-				
-				$current.success:=$current.expected=$value
-				
-			End if 
-			
-			//______________________________________________________
-		: ($type=Is BLOB:K8:12)
-			
-			var $blob; $result : Blob
-			var $size : Integer
-			
-			$blob:=$current.expected
-			$result:=$value
-			$size:=BLOB size:C605($blob)
-			
-			If ($size=BLOB size:C605($result))
-				
-				For ($i; 0; $size-1; 1)
-					
-					If ($blob{$i}#$result{$i})
-						
-						$current.success:=False:C215
-						return $current.success
-						
-					End if 
-				End for 
-				
-				$current.success:=True:C214
-				return $current.success
-				
-			Else 
-				
-				$current.success:=False:C215
-				return $current.success
-				
-			End if 
+			$test.success:=$test.result.length=$test.expected
+			This:C1470.isEqual($value.length)
 			
 			//______________________________________________________
 		Else 
 			
-			$current.success:=$current.expected=$value
+			$test.error:=This:C1470.desc+": '"+$test.desc+"': toLength() can't be applied to the type "+This:C1470[""].types[$type]
+			This:C1470._resume($test)
+			
+			return 
 			
 			//______________________________________________________
 	End case 
-	
-	return $current.success
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function _value($test) : Variant
@@ -451,31 +515,31 @@ Function _value($test) : Variant
 	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function _bypass($current : Object) : Boolean
+Function _bypass($test : Object) : Boolean
 	
 	Case of 
 			
 			//______________________________________________________
-		: ($current.os=Null:C1517)
+		: ($test.os=Null:C1517)
 			
 			// <NOTHING MORE TO DO>
 			
 			//______________________________________________________
-		: (Is macOS:C1572 && ($current.os.indexOf("macOS")=-1))
+		: (Is macOS:C1572 && ($test.os.indexOf("macOS")=-1))
 			
-			$current.bypassed:="Skipped on macOS"
+			$test.bypassed:="Skipped on macOS"
 			return True:C214
 			
 			//______________________________________________________
-		: (Is Windows:C1573 && ($current.os.indexOf("Windows")=-1))
+		: (Is Windows:C1573 && ($test.os.indexOf("Windows")=-1))
 			
-			$current.bypassed:="Skipped on Windows"
+			$test.bypassed:="Skipped on Windows"
 			return True:C214
 			
 			//______________________________________________________
-		: (Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572) & ($current.os.indexOf("Linux")=-1))
+		: (Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572) & ($test.os.indexOf("Linux")=-1))
 			
-			$current.bypassed:="Skipped on Linux"
+			$test.bypassed:="Skipped on Linux"
 			return True:C214
 			
 			//______________________________________________________
@@ -484,43 +548,40 @@ Function _bypass($current : Object) : Boolean
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
 Function _resume($test : Object)
 	
-	This:C1470.failedTests.push($test)
-	
-	If (Not:C34(Bool:C1537($test.noAssert)))
+	If (Not:C34(Bool:C1537($test.success)))
 		
-		ASSERT:C1129(False:C215; $test.error)
+		This:C1470.failedTests.push($test)
+		
+	End if 
+	
+	If (Not:C34(Bool:C1537($test.noReport)))
+		
+		This:C1470.reporter(False:C215; String:C10($test.error))
 		
 	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function _assert($assertion : Boolean) : Boolean
+Function _reporter($assertion : Boolean) : Boolean
 	
-	var $expected; $result : Text
-	var $current : Object
+	var $test : Object
 	
-	$current:=This:C1470.current
-	$assertion:=Count parameters:C259>=1 ? $assertion : $current.success
+	$test:=This:C1470.current
+	$assertion:=Count parameters:C259>=1 ? $assertion : $test.success
 	
 	If (Not:C34($assertion))
 		
-		$result:=This:C1470._format($current.result; $current.type)
-		$expected:=This:C1470._format($current.expected; $current.type)
-		$current.error:=This:C1470.desc+": '"+$current.desc+"' gives '"+$result+"' when '"+$expected+"' was expected"
-		This:C1470.failedTests.push($current)
+		$test.error:=This:C1470.desc+": '"+$test.desc
+		$test.error+="' gives '"+This:C1470._format($test.expected; $test.type)
+		$test.error+="' when '"+This:C1470._format($test.result; $test.type)+"' was expected"
 		
-		If (Not:C34(Bool:C1537($current.noAssert)))
-			
-			ASSERT:C1129($assertion; $current.error)
-			
-		End if 
+		This:C1470.failedTests.push($test)
 		
-	Else 
+	End if 
+	
+	If (Not:C34(Bool:C1537($test.noReport)))
 		
-		If (Not:C34(Bool:C1537($current.noAssert)))
-			
-			ASSERT:C1129(True:C214)  // !! To be counted
-			
-		End if 
+		This:C1470.reporter($assertion; String:C10($test.error))
+		
 	End if 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
@@ -644,113 +705,40 @@ Function _format($value; $valueType) : Text
 	End case 
 	
 	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function _falsy($current : Object) : Boolean
+Function _empty($test : Object) : Boolean
 	
 	Case of 
 			
 			//______________________________________________________
-		: ($current.result=Null:C1517)\
-			 || (Undefined:C82($current.result))
+		: ($test.type=Is text:K8:3)
 			
-			return True:C214
-			
-			//______________________________________________________
-		: ($current.type=Is boolean:K8:9)
-			
-			return $current.result=False:C215
+			return Length:C16($test.result)=0
 			
 			//______________________________________________________
-		: ($current.type=Is text:K8:3)
+		: ($test.type=Is object:K8:27)
 			
-			return Length:C16($current.result)=0
-			
-			//______________________________________________________
-		: ($current.type=Is date:K8:7)
-			
-			return $current.result=!00-00-00!
+			return OB Is empty:C1297($test.result)
 			
 			//______________________________________________________
-		: ($current.type=Is time:K8:8)
+		: ($test.type=Is collection:K8:32)
 			
-			return $current.result=?00:00:00?
-			
-			//______________________________________________________
-		: ($current.type=Is picture:K8:10)
-			
-			return Picture size:C356($current.result)=0
+			return $test.result.length=0
 			
 			//______________________________________________________
-		: ($current.type=Is BLOB:K8:12)
+		: ($test.type=Is picture:K8:10)
 			
-			return BLOB size:C605($current.result)=0
-			
-			//______________________________________________________
-		: ($current.type=Is object:K8:27)
-			
-			return OB Is empty:C1297($current.result)
+			return Picture size:C356($test.result)=0
 			
 			//______________________________________________________
-		: ($current.type=Is collection:K8:32)
+		: ($test.type=Is BLOB:K8:12)
 			
-			return $current.result.length=0
-			
-			//______________________________________________________
-		: ($current.type=Is integer:K8:5)\
-			 || ($current.type=Is real:K8:4)
-			
-			return $current.result=0
-			
-			//______________________________________________________
-		: ($current.type=Is pointer:K8:14)
-			
-			return Is nil pointer:C315($current.result)
+			return BLOB size:C605($test.result)=0
 			
 			//______________________________________________________
 		Else 
 			
-			$current.error:=This:C1470.desc+": '"+$current.desc+": isFalsy/Truthy is not managed for the type "+This:C1470[""].types[$current.type]
-			This:C1470._resume($current)
-			
-			return 
-			
-			//______________________________________________________
-	End case 
-	
-	// === === === === === === === === === === === === === === === === === === === === === === === === === === ===
-Function _empty($current : Object) : Boolean
-	
-	Case of 
-			
-			//______________________________________________________
-		: ($current.type=Is text:K8:3)
-			
-			return Length:C16($current.result)=0
-			
-			//______________________________________________________
-		: ($current.type=Is object:K8:27)
-			
-			return OB Is empty:C1297($current.result)
-			
-			//______________________________________________________
-		: ($current.type=Is collection:K8:32)
-			
-			return $current.result.length=0
-			
-			//______________________________________________________
-		: ($current.type=Is picture:K8:10)
-			
-			return Picture size:C356($current.result)=0
-			
-			//______________________________________________________
-		: ($current.type=Is BLOB:K8:12)
-			
-			return BLOB size:C605($current.result)=0
-			
-			//______________________________________________________
-		Else 
-			
-			$current.error:=This:C1470.desc+": '"+$current.desc+": isEmpty/NotEmpty can't be applied to the type "+This:C1470[""].types[$current.type]
-			This:C1470._resume($current)
+			$test.error:=This:C1470.desc+": '"+$test.desc+": isEmpty/NotEmpty can't be applied to the type "+This:C1470[""].types[$test.type]
+			This:C1470._resume($test)
 			
 			return 
 			
