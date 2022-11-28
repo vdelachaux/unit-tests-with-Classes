@@ -355,6 +355,8 @@ Function isNull($value) : cs:C1710.ut
 		
 	End if 
 	
+	This:C1470.lastTest.os:=This:C1470.lastTest.os || New collection:C1472
+	This:C1470.lastTest.os.push("Windows")
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === ===
@@ -387,6 +389,8 @@ Function isNotNull($value) : cs:C1710.ut
 		
 	End if 
 	
+	This:C1470.lastTest.os:=This:C1470.lastTest.os || New collection:C1472
+	This:C1470.lastTest.os.push("Linux")
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === ===
@@ -612,6 +616,9 @@ Function toLength($value; $length : Integer) : cs:C1710.ut
 	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 Function _value($test) : Variant
 	
+	This:C1470.lastTest.os:=This:C1470.lastTest.os || New collection:C1472
+	This:C1470.lastTest.os.push("Linux")
+	return This:C1470
 	If (Value type:C1509($test)=Is object:K8:27)\
 		 && (OB Instance of:C1731($test; 4D:C1709.Function))
 		
