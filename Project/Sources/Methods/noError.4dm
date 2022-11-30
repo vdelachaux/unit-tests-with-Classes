@@ -1,2 +1,2 @@
-//%attributes = {}
+//%attributes = {"invisible":true}
 //

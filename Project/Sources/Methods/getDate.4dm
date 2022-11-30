@@ -1,4 +1,4 @@
-//%attributes = {}
+//%attributes = {"invisible":true}
 #DECLARE() : Date
 
 myDate:=Current date:C33

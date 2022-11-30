@@ -1,4 +1,4 @@
-//%attributes = {}
+//%attributes = {"invisible":true}
 #DECLARE($test : Integer) : Object
 
 If (False:C215)

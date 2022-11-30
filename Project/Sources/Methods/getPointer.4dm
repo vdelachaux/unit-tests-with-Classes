@@ -1,4 +1,4 @@
-//%attributes = {}
+//%attributes = {"invisible":true}
 #DECLARE() : Pointer
 
 var number : Integer

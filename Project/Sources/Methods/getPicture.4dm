@@ -1,4 +1,4 @@
-//%attributes = {}
+//%attributes = {"invisible":true}
 #DECLARE($test : Integer) : Picture
 
 var myPicture : Picture

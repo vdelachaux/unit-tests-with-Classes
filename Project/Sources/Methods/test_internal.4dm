@@ -372,4 +372,14 @@ ASSERT:C1129($test.failed; "Should fail")
 ASSERT:C1129($test.isNumeric; "Wrong type")
 ASSERT:C1129($test.error="messages: 'Wrong text length': Text length is 11 when 12 was expected")
 
+$test:=$ut.test("File").noReport().isTrue(File:C1566("toto")).latest
+ASSERT:C1129($test.failed; "Should fail")
+ASSERT:C1129($test.isObject; "Wrong type")
+ASSERT:C1129($test.error="messages: 'File': The 'File(/toto/)' doesn't exists")
+
+$test:=$ut.test("File").noReport().isTrue(Folder:C1567("toto")).latest
+ASSERT:C1129($test.failed; "Should fail")
+ASSERT:C1129($test.isObject; "Wrong type")
+ASSERT:C1129($test.error="messages: 'File': The 'Folder(/toto/)' doesn't exists")
+
 end

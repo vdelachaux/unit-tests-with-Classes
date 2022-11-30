@@ -1,4 +1,4 @@
-//%attributes = {}
+//%attributes = {"invisible":true}
 #DECLARE($test : Integer) : Blob
 
 var myBlob : Blob

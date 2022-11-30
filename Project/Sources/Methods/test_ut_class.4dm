@@ -153,6 +153,9 @@ $ut.suite("isTrue")
 $ut.test("True").expect(True:C214).isTrue()
 $ut.test("True Shortcut").isTrue(1=1)
 
+$ut.test("File").isTrue(File:C1566(Structure file:C489; fk platform path:K87:2))
+
+
 //MARK:-isFalse()
 $ut.suite("isFalse")
 $ut.test("False").expect(False:C215).isFalse()

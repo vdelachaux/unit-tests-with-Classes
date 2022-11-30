@@ -287,6 +287,27 @@ Function isTrue($value) : cs:C1710.ut
 		$test.expected:=$value
 		$test.type:=$test.type=Null:C1517 ? Value type:C1509($value) : $test.type
 		
+		If (Value type:C1509($value)=Is object:K8:27)
+			
+			If (OB Instance of:C1731($value; 4D:C1709.File)) | (OB Instance of:C1731($value; 4D:C1709.Folder))
+				
+				$test.success:=$value.exists
+				
+				If ($test.success)
+					
+					return This:C1470
+					
+				Else 
+					
+					If ($test.error=Null:C1517)
+						
+						$test.error:=This:C1470.desc+": '"+$test.desc+"': The '"+This:C1470._stringify($value)+"' doesn't exists"
+						return This:C1470._resume($test)
+						
+					End if 
+				End if 
+			End if 
+		End if 
 	End if 
 	
 	$test.resultType:=Is boolean:K8:9
@@ -421,7 +442,7 @@ Function isFalsy($value; $type : Integer) : cs:C1710.ut
 		
 		If ($test.error=Null:C1517)
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"': as returned a not falsy value: '"+This:C1470._format($test.expected; $test.type)+"'"
+			$test.error:=This:C1470.desc+": '"+$test.desc+"': as returned a not falsy value: '"+This:C1470._stringify($test.expected; $test.type)+"'"
 			return This:C1470._resume($test)
 			
 		End if 
@@ -467,7 +488,7 @@ Function isTruthy($value; $type : Integer) : cs:C1710.ut
 	
 	If ($test.error=Null:C1517)
 		
-		$test.error:=This:C1470.desc+": '"+$test.desc+"': as returned a not truthy value: '"+This:C1470._format($test.expected; $test.type)+"'"
+		$test.error:=This:C1470.desc+": '"+$test.desc+"': as returned a not truthy value: '"+This:C1470._stringify($test.expected; $test.type)+"'"
 		return This:C1470._resume($test)
 		
 	End if 
@@ -789,7 +810,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 							
 							If (Not:C34(This:C1470._strictTextEqual($actual[$property]; $expected[$property])))
 								
-								$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL (\""+This:C1470._format($actual[$property])+"\") EXPECTED (\""+This:C1470._format($expected[$property])+"\")"
+								$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL (\""+This:C1470._stringify($actual[$property])+"\") EXPECTED (\""+This:C1470._stringify($expected[$property])+"\")"
 								return 
 								
 							End if 
@@ -798,7 +819,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 							
 							If ($actual[$property]#$expected[$property])
 								
-								$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL ("+This:C1470._format($actual[$property])+") EXPECTED ("+This:C1470._format($expected[$property])+")"
+								$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL ("+This:C1470._stringify($actual[$property])+") EXPECTED ("+This:C1470._stringify($expected[$property])+")"
 								return 
 								
 							End if 
@@ -877,7 +898,7 @@ Function _equalCollection($expected : Collection; $actual : Collection; $test : 
 						
 						If (Not:C34(This:C1470._strictTextEqual($actual[$i]; $expected[$i])))
 							
-							$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL (\""+This:C1470._format($actual[$i])+"\") EXPECTED (\""+This:C1470._format($expected[$i])+"\")"
+							$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL (\""+This:C1470._stringify($actual[$i])+"\") EXPECTED (\""+This:C1470._stringify($expected[$i])+"\")"
 							return 
 							
 						End if 
@@ -886,7 +907,7 @@ Function _equalCollection($expected : Collection; $actual : Collection; $test : 
 						
 						If ($actual[$i]#$expected[$i])
 							
-							$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL ("+This:C1470._format($actual[$i])+") EXPECTED ("+This:C1470._format($expected[$i])+")"
+							$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL ("+This:C1470._stringify($actual[$i])+") EXPECTED ("+This:C1470._stringify($expected[$i])+")"
 							return 
 							
 						End if 
@@ -1149,7 +1170,7 @@ Function _reporter($assertion : Boolean) : cs:C1710.ut
 				
 			Else 
 				
-				$test.error+="gives '"+This:C1470._format($test.expected; $test.type)
+				$test.error+="gives '"+This:C1470._stringify($test.expected; $test.type)
 				
 				If ($test.type=Is null:K8:31)
 					
@@ -1161,7 +1182,7 @@ Function _reporter($assertion : Boolean) : cs:C1710.ut
 					
 				End if 
 				
-				$test.error+=This:C1470._format($test.result; $test.type)+"' was expected"
+				$test.error+=This:C1470._stringify($test.result; $test.type)+"' was expected"
 				
 			End if 
 			
@@ -1181,7 +1202,7 @@ Function _reporter($assertion : Boolean) : cs:C1710.ut
 	return This:C1470
 	
 	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
-Function _format($value; $valueType) : Text
+Function _stringify($value; $valueType) : Text
 	
 	var $type : Integer
 	$type:=Value type:C1509($value)
@@ -1274,7 +1295,35 @@ Function _format($value; $valueType) : Text
 			return $value=Null:C1517 ? String:C10($value) : String:C10($value)
 			
 			//______________________________________________________
-		: ($type=Is object:K8:27) || ($type=Is collection:K8:32)
+		: ($type=Is object:K8:27)
+			
+			Case of 
+					
+					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+				: (OB Instance of:C1731($value; 4D:C1709.Function))
+					
+					return "Function("+String:C10($value.source)+")"
+					
+					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+				: (OB Instance of:C1731($value; 4D:C1709.Folder))
+					
+					return "Folder("+String:C10($value.path)+")"
+					
+					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+				: (OB Instance of:C1731($value; 4D:C1709.File))
+					
+					return "File("+String:C10($value.path)+")"
+					
+					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+				Else 
+					
+					return $value=Null:C1517 ? String:C10($value) : JSON Stringify:C1217($value)
+					
+					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+			End case 
+			
+			//______________________________________________________
+		: ($type=Is collection:K8:32)
 			
 			return $value=Null:C1517 ? String:C10($value) : JSON Stringify:C1217($value)
 			
