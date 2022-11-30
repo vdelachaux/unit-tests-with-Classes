@@ -1,19 +1,19 @@
 //%attributes = {}
-#DECLARE($test : Integer) : Object
+#DECLARE($test : Integer) : Text
 
 Case of 
 		
 		//______________________________________________________
 	: ($test=1)
 		
-		return New object:C1471(\
-			"foo"; "BAR")
+		myText:="HELLO WORLD"
 		
 		//______________________________________________________
 	Else 
 		
-		return New object:C1471(\
-			"foo"; "bar")
+		myText:="Hello World"
 		
 		//______________________________________________________
 End case 
+
+return myText
