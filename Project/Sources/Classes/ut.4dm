@@ -28,7 +28,7 @@ Class constructor($reporter : 4D:C1709.Function)
 	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
 Function get successful() : Boolean
 	
-	If (This:C1470.tests.length>0)
+	If (This:C1470.tests#Null:C1517) && (This:C1470.tests.length>0) && (This:C1470.failedTests#Null:C1517)
 		
 		return This:C1470.failedTests.length=0
 		
@@ -37,7 +37,7 @@ Function get successful() : Boolean
 	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
 Function get failed() : Boolean
 	
-	If (This:C1470.tests.length>0)
+	If (This:C1470.tests#Null:C1517) && (This:C1470.tests.length>0) && (This:C1470.failedTests#Null:C1517)
 		
 		return This:C1470.failedTests.length>0
 		
@@ -46,22 +46,30 @@ Function get failed() : Boolean
 	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
 Function get testNumber() : Integer
 	
-	return This:C1470.tests.length
+	If (This:C1470.tests#Null:C1517)
+		
+		return This:C1470.tests.length
+		
+	End if 
 	
 	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
 Function get errorNumber() : Integer
 	
-	return This:C1470.failedTests.length
+	If (This:C1470.failedTests#Null:C1517)
+		
+		return This:C1470.failedTests.length
+		
+	End if 
 	
 	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
 Function get lastError() : Variant
 	
-	return (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop() : Null:C1517
+	return (This:C1470.failedTests#Null:C1517) && (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop() : Null:C1517
 	
 	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
 Function get lastErrorText() : Text
 	
-	return (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop().error : ""
+	return (This:C1470.failedTests#Null:C1517) && (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop().error : ""
 	
 	// === === === === === === === === === === === === === === === === ===
 Function suite($desc : Text) : cs:C1710.ut
@@ -713,7 +721,7 @@ Function _equal($value; $test : cs:C1710.test) : Boolean
 		: ($type=Is BLOB:K8:12)
 			
 			var $blob; $result : Blob
-			var $size : Integer
+			var $i; $size : Integer
 			
 			$blob:=$test.expected
 			$result:=$value
@@ -1195,7 +1203,7 @@ Function _reporter($assertion : Boolean) : cs:C1710.ut
 	
 	If (Not:C34(Bool:C1537($test.noReport)))
 		
-		This:C1470.reporter($assertion; String:C10($test.error))
+		This:C1470.reporter(Bool:C1537($assertion); String:C10($test.error))
 		
 	End if 
 	
@@ -1234,11 +1242,12 @@ Function _stringify($value; $valueType) : Text
 			var $var : Text
 			var $table; $field : Integer
 			
-			$Txt_onErrCallMethod:=Method called on error:C704
+			var $onErrCallMethod : Text
+			$onErrCallMethod:=Method called on error:C704
 			//====================== [
 			ON ERR CALL:C155("noError")
 			RESOLVE POINTER:C394($value; $var; $table; $field)
-			ON ERR CALL:C155($Txt_onErrCallMethod)
+			ON ERR CALL:C155($onErrCallMethod)
 			//====================== ]
 			
 			If (Length:C16($var)=0)
