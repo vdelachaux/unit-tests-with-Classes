@@ -1,3 +1,5 @@
+//property reporter : 4D.Function
+
 Class constructor($reporter : 4D:C1709.Function)
 	
 	var $c : Collection
@@ -23,9 +25,12 @@ Class constructor($reporter : 4D:C1709.Function)
 	
 	This:C1470.reporter:=$reporter || Formula:C1597(ASSERT:C1129($1; $2))
 	
-	This:C1470.suite()
+	This:C1470.suiteNumber:=0
+	This:C1470.desc:=""
+	This:C1470.tests:=Null:C1517
+	This:C1470.failedTests:=Null:C1517
 	
-	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
 Function get successful() : Boolean
 	
 	If (This:C1470.tests#Null:C1517) && (This:C1470.tests.length>0) && (This:C1470.failedTests#Null:C1517)
@@ -34,7 +39,7 @@ Function get successful() : Boolean
 		
 	End if 
 	
-	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
 Function get failed() : Boolean
 	
 	If (This:C1470.tests#Null:C1517) && (This:C1470.tests.length>0) && (This:C1470.failedTests#Null:C1517)
@@ -43,7 +48,7 @@ Function get failed() : Boolean
 		
 	End if 
 	
-	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
 Function get testNumber() : Integer
 	
 	If (This:C1470.tests#Null:C1517)
@@ -52,7 +57,7 @@ Function get testNumber() : Integer
 		
 	End if 
 	
-	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
 Function get errorNumber() : Integer
 	
 	If (This:C1470.failedTests#Null:C1517)
@@ -61,12 +66,12 @@ Function get errorNumber() : Integer
 		
 	End if 
 	
-	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
 Function get lastError() : Variant
 	
 	return (This:C1470.failedTests#Null:C1517) && (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop() : Null:C1517
 	
-	// <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> <==> 
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
 Function get lastErrorText() : Text
 	
 	return (This:C1470.failedTests#Null:C1517) && (This:C1470.failedTests.length>0) ? This:C1470.failedTests.copy().pop().error : ""
@@ -74,7 +79,11 @@ Function get lastErrorText() : Text
 	// === === === === === === === === === === === === === === === === ===
 Function suite($desc : Text) : cs:C1710.ut
 	
-	This:C1470.desc:=(Length:C16($desc)=0) ? "No name" : $desc
+	This:C1470.suiteNumber+=1
+	
+	$desc:=Length:C16($desc)=0 ? "Suite "+String:C10(This:C1470.suiteNumber) : $desc
+	
+	This:C1470.desc:=$desc
 	This:C1470.tests:=New collection:C1472
 	This:C1470.failedTests:=New collection:C1472
 	
@@ -87,6 +96,26 @@ Function feature($desc : Text) : cs:C1710.ut
 	
 	// === === === === === === === === === === === === === === === === ===
 Function test($desc : Text; $type : Integer) : cs:C1710.ut
+	
+	This:C1470.tests:=This:C1470.tests || New collection:C1472
+	
+	If (Length:C16($desc)=0)
+		
+		$desc:="Test "+String:C10(This:C1470.tests.length+1)
+		
+	Else 
+		
+		var $counter : Integer
+		var $t : Text
+		$t:=$desc
+		
+		While (This:C1470.tests.query("desc = :1"; $desc).length>0)
+			
+			$counter+=1
+			$desc:=$t+" "+String:C10(($counter))
+			
+		End while 
+	End if 
 	
 	This:C1470.latest:=cs:C1710.test.new($desc; Count parameters:C259>=2 ? $type : Null:C1517)
 	This:C1470.tests.push(This:C1470.latest)
@@ -122,19 +151,28 @@ Function expect($value; $type : Integer) : cs:C1710.ut
 		
 		$type:=Value type:C1509($value)
 		$type:=$type=Is undefined:K8:13 ? Is null:K8:31 : $type
+		
+		If (Is compiled mode:C492(*))\
+			 && ($type=Is longint:K8:6)
+			
+			$type:=Is real:K8:4
+			
+		End if 
+		
 		$test.type:=$test.type || $type
 		
 	End if 
 	
-	If ($test.type=Is time:K8:8)
-		
-		$test.expected:=?00:00:00?+$value
-		
-	Else 
-		
-		$test.expected:=$value
-		
-	End if 
+	$test.expected:=$test.type=Is time:K8:8 ? ?00:00:00?+$value : $value
+	
+	return This:C1470
+	
+	//MARK:-
+	// === === === === === === === === === === === === === === === === ===
+Function catchError() : cs:C1710.ut
+	
+	//TODO:Catch Error
+	This:C1470.latest._catchError:=True:C214
 	
 	return This:C1470
 	
@@ -174,6 +212,7 @@ Function Linux() : cs:C1710.ut
 	This:C1470.latest.os.push("Linux")
 	return This:C1470
 	
+	//MARK:-
 	// === === === === === === === === === === === === === === === === ===
 Function isEqualTo($value; $type : Integer) : cs:C1710.ut
 	
@@ -182,19 +221,31 @@ Function isEqualTo($value; $type : Integer) : cs:C1710.ut
 	
 	If (Count parameters:C259>=2)
 		
-		$test.type:=$type
+		$test.typeResult:=$type
 		
 	Else 
 		
-		$test.type:=$test.type=Null:C1517 ? Value type:C1509($test.expected) : $test.type
+		$type:=Value type:C1509($value)
+		$type:=$type=Is undefined:K8:13 ? Is null:K8:31 : $type
+		
+		If (Is compiled mode:C492(*))\
+			 && ($type=Is longint:K8:6)
+			
+			$type:=Is real:K8:4
+			
+		End if 
+		
+		$test.typeResult:=$test.typeResult || $type
 		
 	End if 
+	
+	This:C1470.failedTests:=This:C1470.failedTests || New collection:C1472
 	
 	Case of 
 			
 			//______________________________________________________
 		: ($test.type=Is object:K8:27)\
-			 && (Value type:C1509($value)=Is object:K8:27)
+			 && ($test.typeResult=Is object:K8:27)
 			
 			$test.result:=This:C1470._value($value)
 			$test.success:=This:C1470._equalObject($test.expected; $test.result; $test)
@@ -207,7 +258,7 @@ Function isEqualTo($value; $type : Integer) : cs:C1710.ut
 			
 			//______________________________________________________
 		: ($test.type=Is collection:K8:32)\
-			 && (Value type:C1509($value)=Is collection:K8:32)
+			 && ($test.typeResult=Is collection:K8:32)
 			
 			$test.result:=This:C1470._value($value)
 			$test.success:=This:C1470._equalCollection($test.expected; $test.result; $test)
@@ -233,23 +284,26 @@ Function isNotEqualTo($value; $type : Integer) : cs:C1710.ut
 	
 	var $test : cs:C1710.test
 	$test:=This:C1470.latest
+	
 	$test.not:=True:C214
 	
 	If (Count parameters:C259>=2)
 		
-		$test.type:=$type
+		$test.typeResult:=$type
 		
 	Else 
 		
-		$test.type:=$test.type=Null:C1517 ? Value type:C1509($test.expected) : $test.type
+		$test.typeResult:=$test.typeResult || Value type:C1509($value)
 		
 	End if 
+	
+	This:C1470.failedTests:=This:C1470.failedTests || New collection:C1472
 	
 	Case of 
 			
 			//______________________________________________________
 		: ($test.type=Is object:K8:27)\
-			 && (Value type:C1509($value)=Is object:K8:27)
+			 && ($test.typeResult=Is object:K8:27)
 			
 			$test.result:=This:C1470._value($value)
 			$test.success:=Not:C34(This:C1470._equalObject($test.expected; $test.result; $test))
@@ -262,7 +316,7 @@ Function isNotEqualTo($value; $type : Integer) : cs:C1710.ut
 			
 			//______________________________________________________
 		: ($test.type=Is collection:K8:32)\
-			 && (Value type:C1509($value)=Is collection:K8:32)
+			 && ($test.typeResult=Is collection:K8:32)
 			
 			$test.result:=This:C1470._value($value)
 			$test.success:=Not:C34(This:C1470._equalCollection($test.expected; $test.result; $test))
@@ -309,7 +363,7 @@ Function isTrue($value) : cs:C1710.ut
 					
 					If ($test.error=Null:C1517)
 						
-						$test.error:=This:C1470.desc+": '"+$test.desc+"': The '"+This:C1470._stringify($value)+"' doesn't exists"
+						$test.error:=This:C1470._header()+This:C1470._stringify($value)+" doesn't exists"
 						return This:C1470._resume($test)
 						
 					End if 
@@ -318,7 +372,7 @@ Function isTrue($value) : cs:C1710.ut
 		End if 
 	End if 
 	
-	$test.resultType:=Is boolean:K8:9
+	$test.typeResult:=Is boolean:K8:9
 	
 	If ($test.type=Is boolean:K8:9)
 		
@@ -326,7 +380,7 @@ Function isTrue($value) : cs:C1710.ut
 		
 	End if 
 	
-	$test.error:=This:C1470.desc+": '"+$test.desc+"': isTrue() cannot be applied to the type "+This:C1470._.types[$test.type]
+	$test.error:=This:C1470._header()+Current method name:C684+"() cannot be applied to the type "+This:C1470._.types[$test.type]
 	return This:C1470._resume($test)
 	
 	// === === === === === === === === === === === === === === === === ===
@@ -341,9 +395,30 @@ Function isFalse($value) : cs:C1710.ut
 		$test.expected:=$value
 		$test.type:=$test.type=Null:C1517 ? Value type:C1509($value) : $test.type
 		
+		If (Value type:C1509($value)=Is object:K8:27)
+			
+			If (OB Instance of:C1731($value; 4D:C1709.File)) | (OB Instance of:C1731($value; 4D:C1709.Folder))
+				
+				$test.success:=Not:C34($value.exists)
+				
+				If ($test.success)
+					
+					return This:C1470
+					
+				Else 
+					
+					If ($test.error=Null:C1517)
+						
+						$test.error:=This:C1470._header()+This:C1470._stringify($value)+" doesn't exists"
+						return This:C1470._resume($test)
+						
+					End if 
+				End if 
+			End if 
+		End if 
 	End if 
 	
-	$test.resultType:=Is boolean:K8:9
+	$test.typeResult:=Is boolean:K8:9
 	
 	If ($test.type=Is boolean:K8:9)
 		
@@ -351,7 +426,7 @@ Function isFalse($value) : cs:C1710.ut
 		
 	End if 
 	
-	$test.error:=This:C1470.desc+": '"+$test.desc+"': isFalse() cannot be applied to the type "+This:C1470._.types[$test.type]
+	$test.error:=This:C1470._header()+Current method name:C684+"() cannot be applied to the type "+This:C1470._.types[$test.type]
 	return This:C1470._resume($test)
 	
 	// === === === === === === === === === === === === === === === === ===
@@ -368,7 +443,7 @@ Function isNull($value) : cs:C1710.ut
 		
 	End if 
 	
-	$test.resultType:=Is null:K8:31
+	$test.typeResult:=Is null:K8:31
 	$test.success:=This:C1470._null($test)
 	
 	If ($test.success)
@@ -379,7 +454,7 @@ Function isNull($value) : cs:C1710.ut
 	
 	If ($test.error=Null:C1517)
 		
-		$test.error:=This:C1470.desc+": '"+$test.desc+"' as returned an non null value"
+		$test.error:=This:C1470._header()+"returned a non-null value"
 		return This:C1470._resume($test)
 		
 	End if 
@@ -400,7 +475,7 @@ Function isNotNull($value) : cs:C1710.ut
 		
 	End if 
 	
-	$test.resultType:=Is null:K8:31
+	$test.typeResult:=Is null:K8:31
 	$test.success:=Not:C34(This:C1470._null($test))
 	
 	If ($test.success)
@@ -411,7 +486,7 @@ Function isNotNull($value) : cs:C1710.ut
 	
 	If ($test.error=Null:C1517)
 		
-		$test.error:=This:C1470.desc+": '"+$test.desc+"' as returned an non null value"
+		$test.error:=This:C1470._header()+"returned a null value"
 		return This:C1470._resume($test)
 		
 	End if 
@@ -450,7 +525,7 @@ Function isFalsy($value; $type : Integer) : cs:C1710.ut
 		
 		If ($test.error=Null:C1517)
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"': as returned a not falsy value: '"+This:C1470._stringify($test.expected; $test.type)+"'"
+			$test.error:=This:C1470._header()+"as returned a not falsy value: '"+This:C1470._stringify($test.expected; $test.type)+"'"
 			return This:C1470._resume($test)
 			
 		End if 
@@ -480,12 +555,6 @@ Function isTruthy($value; $type : Integer) : cs:C1710.ut
 		End if 
 	End if 
 	
-	If (Count parameters:C259>=2)
-		
-		$test.type:=$type
-		
-	End if 
-	
 	$test.success:=Not:C34(This:C1470._falsy($test))
 	
 	If ($test.success)
@@ -496,7 +565,7 @@ Function isTruthy($value; $type : Integer) : cs:C1710.ut
 	
 	If ($test.error=Null:C1517)
 		
-		$test.error:=This:C1470.desc+": '"+$test.desc+"': as returned a not truthy value: '"+This:C1470._stringify($test.expected; $test.type)+"'"
+		$test.error:=This:C1470._header()+"as returned a not truthy value: '"+This:C1470._stringify($test.expected; $test.type)+"'"
 		return This:C1470._resume($test)
 		
 	End if 
@@ -535,7 +604,7 @@ Function isEmpty($value; $type : Integer) : cs:C1710.ut
 		
 		If ($test.error=Null:C1517)
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+" as returned an non empty "+This:C1470._.types[$test.type]
+			$test.error:=This:C1470._header()+"as returned an non empty "+This:C1470._.types[$test.type]
 			return This:C1470._resume($test)
 			
 		End if 
@@ -565,7 +634,7 @@ Function isNotEmpty($value; $type : Integer) : cs:C1710.ut
 		End if 
 	End if 
 	
-	$test.success:=Not:C34(This:C1470._empty($test))
+	$test.success:=Not:C34(This:C1470._empty($test)) & ($test.error=Null:C1517)
 	
 	If ($test.successful)
 		
@@ -575,7 +644,7 @@ Function isNotEmpty($value; $type : Integer) : cs:C1710.ut
 		
 		If ($test.error=Null:C1517)
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"' as returned an empty "+This:C1470._.types[$test.type]
+			$test.error:=This:C1470._header()+"as returned an empty "+This:C1470._.types[$test.type]
 			return This:C1470._resume($test)
 			
 		End if 
@@ -610,7 +679,7 @@ Function toLength($value; $length : Integer) : cs:C1710.ut
 			
 			If ($test.failed)
 				
-				$test.error:=This:C1470.desc+": '"+$test.desc+"': Text length is "+String:C10(Length:C16($test.result))+" when "+String:C10($test.expected)+" was expected"
+				$test.error:=This:C1470._header()+"Text length is "+String:C10(Length:C16($test.result))+" when "+String:C10($test.expected)+" was expected"
 				
 			End if 
 			
@@ -623,7 +692,7 @@ Function toLength($value; $length : Integer) : cs:C1710.ut
 			
 			If ($test.failed)
 				
-				$test.error:=This:C1470.desc+": '"+$test.desc+"': Collection length is "+String:C10(Length:C16($test.result.length))+" when "+String:C10($test.expected)+" was expected"
+				$test.error:=This:C1470._header()+"Collection length is "+String:C10($test.result.length)+" when "+String:C10($test.expected)+" was expected"
 				
 			End if 
 			
@@ -632,12 +701,13 @@ Function toLength($value; $length : Integer) : cs:C1710.ut
 			//______________________________________________________
 		Else 
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"': toLength() can't be applied to the type "+This:C1470._.types[$type]
+			$test.error:=This:C1470._header()+Current method name:C684+"() can't be applied to the type "+This:C1470._.types[$type]
 			return This:C1470._resume($test)
 			
 			//______________________________________________________
 	End case 
 	
+	//MARK:-
 	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 Function _value($test) : Variant
 	
@@ -655,9 +725,6 @@ Function _value($test) : Variant
 	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 Function _equal($value; $test : cs:C1710.test) : Boolean
 	
-	var $mask : Picture
-	var $type : Integer
-	
 	$value:=This:C1470._value($value)
 	$test.result:=$value
 	
@@ -668,7 +735,7 @@ Function _equal($value; $test : cs:C1710.test) : Boolean
 	End if 
 	
 	// Perform the comparison according to type
-	$type:=Value type:C1509($value)
+	$test.typeResult:=$test.typeResult=Null:C1517 ? Value type:C1509($value) : $test.typeResult
 	
 	Case of 
 			
@@ -680,45 +747,37 @@ Function _equal($value; $test : cs:C1710.test) : Boolean
 			
 			//______________________________________________________
 		: ($test.type#Null:C1517)\
-			 && ($test.type#$type)
+			 && ($test.type#$test.typeResult)
 			
 			$test.success:=False:C215
 			
-			//______________________________________________________
-		: ($type=Is text:K8:3)
-			
-			$test.success:=$test.strict ? This:C1470._strictTextEqual($value; $test.expected) : ($value=$test.expected)
-			
-			//______________________________________________________
-		: ($type=Is picture:K8:10)
-			
-			// TURN AROUND ACI0103530: Equal pictures returns False if the 2 pictures are empty
-			If (Picture size:C356($test.expected)=0)\
-				 && (Picture size:C356($value)=0)
+			If (Not:C34($test.not))
 				
-				$test.success:=True:C214
-				
-			Else 
-				
-				$test.success:=Equal pictures:C1196($test.expected; $value; $mask)
+				$test.error:=This:C1470._header()
+				$test.error+="TYPE MISMATCH - actual is '"
+				$test.error+=This:C1470._.types[$test.type]+"' instead of '"+This:C1470._.types[$test.typeResult]+"'"
+				This:C1470.failedTests.push($test)
 				
 			End if 
 			
 			//______________________________________________________
-		: ($type=Is pointer:K8:14)
+		: ($test.typeResult=Is text:K8:3)
 			
-			If (Is nil pointer:C315($value))
-				
-				$test.success:=Is nil pointer:C315($test.expected)
-				
-			Else 
-				
-				$test.success:=$test.expected=$value
-				
-			End if 
+			$test.success:=$test.strict ? This:C1470._strictTextEqual($value; $test.expected) : $test.expected=$value
 			
 			//______________________________________________________
-		: ($type=Is BLOB:K8:12)
+		: ($test.typeResult=Is picture:K8:10)
+			
+			var $mask : Picture
+			$test.success:=Equal pictures:C1196($test.expected; $value; $mask)
+			
+			//______________________________________________________
+		: ($test.typeResult=Is pointer:K8:14)
+			
+			$test.success:=Is nil pointer:C315($value) ? Is nil pointer:C315($test.expected) : $test.expected=$value
+			
+			//______________________________________________________
+		: ($test.typeResult=Is BLOB:K8:12)
 			
 			var $blob; $result : Blob
 			var $i; $size : Integer
@@ -763,7 +822,7 @@ Function _equal($value; $test : cs:C1710.test) : Boolean
 Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.test; $base : Text) : Boolean
 	
 	var $property; $uri : Text
-	var $actualType; $expectedType : Integer
+	var $actualType; $expectedType; $indx : Integer
 	var $actualProperties; $expectedProperties : Collection
 	
 	$expectedProperties:=OB Keys:C1719($expected).orderBy()
@@ -771,7 +830,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 	
 	If ($expectedProperties.length#$actualProperties.length)
 		
-		$test.error:=This:C1470.desc+": '"+$test.desc+"' Property number mismatch "+($base="" ? "" : "'"+$base+"' ")+"ACTUAL ("+String:C10($actualProperties.length)+") EXPECTED ("+String:C10($expectedProperties.length)+")"
+		$test.error:=This:C1470._header()+"Property number "+($base="" ? "" : " of '"+$base+"' ")+"is "+String:C10($actualProperties.length)+" when "+String:C10($expectedProperties.length)+" was expected"
 		return 
 		
 	End if 
@@ -780,7 +839,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 		
 		$uri:=$base+"."+$property
 		
-		If ($actual[$property]#Null:C1517)
+		If ($actualProperties.indexOf($property)=$indx)
 			
 			$expectedType:=Value type:C1509($expected[$property])
 			$actualType:=Value type:C1509($actual[$property])
@@ -792,7 +851,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 						//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 					: ($expectedType=Is collection:K8:32)
 						
-						This:C1470._equalCollection($expected[$property]; $actual[$property]; $test; $uri)
+						$test.success:=This:C1470._equalCollection($expected[$property]; $actual[$property]; $test; $uri)
 						
 						If ($test.failed)
 							
@@ -803,7 +862,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 						//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 					: ($expectedType=Is object:K8:27)
 						
-						This:C1470._equalObject($expected[$property]; $actual[$property]; $test; $uri)
+						$test.success:=This:C1470._equalObject($expected[$property]; $actual[$property]; $test; $uri)
 						
 						If ($test.failed)
 							
@@ -818,7 +877,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 							
 							If (Not:C34(This:C1470._strictTextEqual($actual[$property]; $expected[$property])))
 								
-								$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL (\""+This:C1470._stringify($actual[$property])+"\") EXPECTED (\""+This:C1470._stringify($expected[$property])+"\")"
+								$test.error:=This:C1470._header()+"Property '"+$uri+"' gives \""+This:C1470._stringify($expected[$property])+"\" when \""+This:C1470._stringify($actual[$property])+"\" was strictly expected"
 								return 
 								
 							End if 
@@ -827,7 +886,7 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 							
 							If ($actual[$property]#$expected[$property])
 								
-								$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL ("+This:C1470._stringify($actual[$property])+") EXPECTED ("+This:C1470._stringify($expected[$property])+")"
+								$test.error:=This:C1470._header()+"Property '"+$uri+"' gives \""+This:C1470._stringify($expected[$property])+"\" when \""+This:C1470._stringify($actual[$property])+"\" was expected"
 								return 
 								
 							End if 
@@ -838,17 +897,19 @@ Function _equalObject($expected : Object; $actual : Object; $test : cs:C1710.tes
 				
 			Else 
 				
-				$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' type mismatch. ACTUAL ("+This:C1470._.types[$actualType]+") EXPECTED ("+This:C1470._.types[$expectedType]+")"
+				$test.error:=This:C1470._header()+"Property '"+$uri+"' type is \""+This:C1470._.types[$expectedType]+"\" when \""+This:C1470._.types[$actualType]+"\" was expected"
 				return 
 				
 			End if 
 			
 		Else 
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' is missing."
+			$test.error:=This:C1470._header()+"Property '"+$uri+"' is missing."
 			return 
 			
 		End if 
+		
+		$indx+=1
 	End for each 
 	
 	return True:C214
@@ -861,7 +922,8 @@ Function _equalCollection($expected : Collection; $actual : Collection; $test : 
 	
 	If ($expected.length#$actual.length)
 		
-		$test.error:=This:C1470.desc+": '"+$test.desc+"' Collection properties "+($base="" ? "" : "'"+$base+"' ")+"doesn't have expected length ACTUAL ("+String:C10($actual.length)+") EXPECTED ("+String:C10($expected.length)+")"
+		$test.error:=This:C1470._header()+($base="" ? "" : "'"+$base+"' ")+"the number of properties is not the expected one, currently "+String:C10($expected.length)+" whereas "+String:C10($actual.length)+" was expected"
+		
 		return False:C215
 		
 	End if 
@@ -906,7 +968,8 @@ Function _equalCollection($expected : Collection; $actual : Collection; $test : 
 						
 						If (Not:C34(This:C1470._strictTextEqual($actual[$i]; $expected[$i])))
 							
-							$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL (\""+This:C1470._stringify($actual[$i])+"\") EXPECTED (\""+This:C1470._stringify($expected[$i])+"\")"
+							$test.error:=This:C1470._header()+"Property "+$uri+" is '"+This:C1470._stringify($expected[$i])+"' when '"+This:C1470._stringify($actual[$i])+"' was strictly expected"
+							
 							return 
 							
 						End if 
@@ -915,7 +978,7 @@ Function _equalCollection($expected : Collection; $actual : Collection; $test : 
 						
 						If ($actual[$i]#$expected[$i])
 							
-							$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' mismatch ACTUAL ("+This:C1470._stringify($actual[$i])+") EXPECTED ("+This:C1470._stringify($expected[$i])+")"
+							$test.error:=This:C1470._header()+"Property '"+$uri+"' mismatch EXPECTED ("+This:C1470._stringify($actual[$i])+") ACTUAL ("+This:C1470._stringify($expected[$i])+")"
 							return 
 							
 						End if 
@@ -926,7 +989,7 @@ Function _equalCollection($expected : Collection; $actual : Collection; $test : 
 			
 		Else 
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"' Property '"+$uri+"' type mismatch. ACTUAL ("+This:C1470._.types[$actualType]+") EXPECTED ("+This:C1470._.types[$expectedType]+")"
+			$test.error:=This:C1470._header()+"Property '"+$uri+"' type mismatch. EXPECTED ("+This:C1470._.types[$actualType]+") ACTUAL ("+This:C1470._.types[$expectedType]+")"
 			return 
 			
 		End if 
@@ -998,7 +1061,8 @@ Function _empty($test : cs:C1710.test) : Boolean
 			//______________________________________________________
 		Else 
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+": isEmpty/isNotEmpty can't be applied to the type "+This:C1470._.types[$test.type]
+			$test.type:=Value type:C1509($test.expected)
+			$test.error:=This:C1470._header()+"ut.isEmpty() or ut.isNotEmpty() can't be applied to the type "+This:C1470._.types[$test.type]
 			return 
 			
 			//______________________________________________________
@@ -1061,8 +1125,7 @@ Function _falsy($test : cs:C1710.test) : Boolean
 			return $test.expected.length=0
 			
 			//______________________________________________________
-		: ($test.type=Is integer:K8:5)\
-			 || ($test.type=Is real:K8:4)
+		: ($test.isNumeric)
 			
 			return $test.expected=0
 			
@@ -1074,7 +1137,8 @@ Function _falsy($test : cs:C1710.test) : Boolean
 			//______________________________________________________
 		Else 
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"': isFalsy/Truthy is not managed for the type "+This:C1470._.types[$test.type]
+			$test.type:=Value type:C1509($test.expected)
+			$test.error:=This:C1470._header()+"ut.isFalsy() or ut.isTruthy() is not managed for the type "+This:C1470._.types[$test.type]
 			This:C1470._resume($test)
 			
 			return 
@@ -1127,7 +1191,7 @@ Function _resume($test : cs:C1710.test) : cs:C1710.ut
 	
 	If (Not:C34(Bool:C1537($test.noReport)))
 		
-		This:C1470.reporter(False:C215; String:C10($test.error))
+		This:C1470.reporter.call(Null:C1517; False:C215; String:C10($test.error))
 		
 	End if 
 	
@@ -1147,32 +1211,34 @@ Function _reporter($assertion : Boolean) : cs:C1710.ut
 			
 			This:C1470.failedTests.push($test)
 			
-			$test.type:=$test.type || Value type:C1509($test.expected)
-			
 			If ($test.type=Is time:K8:8)\
-				 && ((Value type:C1509($test.result)=Is integer:K8:5) | (Value type:C1509($test.result)=Is real:K8:4))
+				 && (($test.typeResult=Is longint:K8:6) | ($test.typeResult=Is real:K8:4))
 				
-				$test.resultType:=Is time:K8:8
+				$test.typeResult:=Is time:K8:8
 				
 			Else 
 				
-				$test.resultType:=$test.resultType || Value type:C1509($test.result)
+				$test.typeResult:=$test.typeResult || Value type:C1509($test.result)
 				
 			End if 
 			
-			$test.error:=This:C1470.desc+": '"+$test.desc+"' "
+			$test.error:=This:C1470._header()
 			
-			If ($test.type#$test.resultType)
+			If ($test.type#$test.typeResult)
 				
-				$test.error+="TYPE MISMATCH - "+This:C1470._.types[$test.type]+" instead of "
-				
-				If ($test.type=Is pointer:K8:14) && ($test.resultType=Is null:K8:31)
+				If ($test.type=Is pointer:K8:14)\
+					 && ($test.typeResult=Is pointer:K8:14)
 					
-					$test.error+="Nil pointer"
+					var $varName : Text
+					var $tableNum; $fieldNum : Integer
+					RESOLVE POINTER:C394($test.expected; $varName; $tableNum; $fieldNum)
+					
+					$test.error+="gives '->"+$varName+"' when 'Nil pointer' was expected"
 					
 				Else 
 					
-					$test.error+=This:C1470._.types[$test.resultType]
+					$test.error+="TYPE MISMATCH - actual is '"
+					$test.error+=This:C1470._.types[$test.type]+"' instead of '"+This:C1470._.types[$test.typeResult]+"'"
 					
 				End if 
 				
@@ -1190,20 +1256,17 @@ Function _reporter($assertion : Boolean) : cs:C1710.ut
 					
 				End if 
 				
-				$test.error+=This:C1470._stringify($test.result; $test.type)+"' was expected"
+				$test.error+=This:C1470._stringify($test.result; $test.type)
+				$test.error+=$test.strict ? "' was strictly" : "' was"
+				$test.error+=" expected"
 				
 			End if 
-			
-		Else 
-			
-			// A "If" statement should never omit "Else" 
-			
 		End if 
 	End if 
 	
 	If (Not:C34(Bool:C1537($test.noReport)))
 		
-		This:C1470.reporter(Bool:C1537($assertion); String:C10($test.error))
+		This:C1470.reporter.call(Null:C1517; Bool:C1537($assertion); String:C10($test.error))
 		
 	End if 
 	
@@ -1221,13 +1284,13 @@ Function _stringify($value; $valueType) : Text
 		: ($valueType#Null:C1517)\
 			 && ($valueType=Is time:K8:8)
 			
-			return $value=Null:C1517 ? "null" : String:C10(Time:C179($value))
+			return $value=Null:C1517 ? "Null" : String:C10(Time:C179($value))
 			
 			//______________________________________________________
 		: ($valueType#Null:C1517)\
 			 && ($valueType=Is null:K8:31)
 			
-			return $value=Null:C1517 ? "null" : "not null"
+			return $value=Null:C1517 ? "Null" : "not Null"
 			
 			//______________________________________________________
 		: ($valueType#Null:C1517)\
@@ -1250,33 +1313,33 @@ Function _stringify($value; $valueType) : Text
 			ON ERR CALL:C155($onErrCallMethod)
 			//====================== ]
 			
-			If (Length:C16($var)=0)
+			If ($table=0) & ($field=0)  //None (NIL pointer)
 				
-				If ($table=0) & ($field=0)
-					
-					return "NIL pointer"
-					
-				End if 
-				
-				If ($field=0)  // Table
-					
-					return "->["+Table name:C256($table)+"]"
-					
-				End if 
-				
-				return "->["+Table name:C256($table)+"]"+Field name:C257($table; $field)  // Field
+				return "NIL pointer"
 				
 			End if 
 			
-			If ($table=-1) & ($field=-1)  // Variable or array
+			If ($table=-1) & ($field=-1)  // Variable
 				
-				return "->"+$var
+				return "->"+(Length:C16($var)=0 ? "Unknown variable" : $var)
 				
 			End if 
 			
 			If ($field=-1)  // Element of an array
 				
 				return "->"+$var+"{"+String:C10($table)+"}"
+				
+			End if 
+			
+			If (Length:C16($var)=0)
+				
+				If ($table>0) && ($field=0)  // Table
+					
+					return "->["+Table name:C256($table)+"]"
+					
+				End if 
+				
+				return "->["+Table name:C256($table)+"]"+Field name:C257($table; $field)  // Field
 				
 			End if 
 			
@@ -1290,18 +1353,18 @@ Function _stringify($value; $valueType) : Text
 			//______________________________________________________
 		: ($type=Is text:K8:3)
 			
-			return $value=Null:C1517 ? String:C10($value) : $value
+			return $value=Null:C1517 ? "Null" : $value
 			
 			//______________________________________________________
-		: ($type=Is integer:K8:5)\
+		: ($type=Is longint:K8:6)\
 			 | ($type=Is real:K8:4)
 			
-			return $value=Null:C1517 ? String:C10($value) : String:C10($value)
+			return $value=Null:C1517 ? "Null" : String:C10($value)
 			
 			//______________________________________________________
 		: ($type=Is boolean:K8:9)
 			
-			return $value=Null:C1517 ? String:C10($value) : String:C10($value)
+			return $value=Null:C1517 ? "Null" : $value ? "True" : "False"
 			
 			//______________________________________________________
 		: ($type=Is object:K8:27)
@@ -1311,22 +1374,22 @@ Function _stringify($value; $valueType) : Text
 					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 				: (OB Instance of:C1731($value; 4D:C1709.Function))
 					
-					return "Function("+String:C10($value.source)+")"
+					return "Function '"+String:C10($value.source)+"'"
 					
 					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 				: (OB Instance of:C1731($value; 4D:C1709.Folder))
 					
-					return "Folder("+String:C10($value.path)+")"
+					return "Folder '"+String:C10($value.path)+"'"
 					
 					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 				: (OB Instance of:C1731($value; 4D:C1709.File))
 					
-					return "File("+String:C10($value.path)+")"
+					return "File '"+String:C10($value.path)+"'"
 					
 					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 				Else 
 					
-					return $value=Null:C1517 ? String:C10($value) : JSON Stringify:C1217($value)
+					return $value=Null:C1517 ? "Null" : JSON Stringify:C1217($value)
 					
 					//––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 			End case 
@@ -1334,7 +1397,7 @@ Function _stringify($value; $valueType) : Text
 			//______________________________________________________
 		: ($type=Is collection:K8:32)
 			
-			return $value=Null:C1517 ? String:C10($value) : JSON Stringify:C1217($value)
+			return $value=Null:C1517 ? "Null" : JSON Stringify:C1217($value)
 			
 			//______________________________________________________
 		: ($type=Is picture:K8:10)
@@ -1354,13 +1417,17 @@ Function _stringify($value; $valueType) : Text
 			//______________________________________________________
 		: ($type=Is date:K8:7)
 			
-			return $value=Null:C1517 ? String:C10($value) : String:C10($value)
+			return $value=Null:C1517 ? "Null" : String:C10($value)
 			
 			//______________________________________________________
 		: ($type=Is time:K8:8)
 			
-			return $value=Null:C1517 ? String:C10($value) : String:C10(Time:C179($value))
+			return $value=Null:C1517 ? "Null" : String:C10(Time:C179($value))
 			
 			//______________________________________________________
 	End case 
 	
+	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+Function _header() : Text
+	
+	return "["+This:C1470.desc+"] "+This:C1470.latest.desc+": "
