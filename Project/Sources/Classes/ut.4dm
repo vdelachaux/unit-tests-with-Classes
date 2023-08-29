@@ -152,12 +152,8 @@ Function expect($value; $type : Integer) : cs:C1710.ut
 		$type:=Value type:C1509($value)
 		$type:=$type=Is undefined:K8:13 ? Is null:K8:31 : $type
 		
-		If (Is compiled mode:C492(*))\
-			 && ($type=Is longint:K8:6)
-			
-			$type:=Is real:K8:4
-			
-		End if 
+		// Treat all numeric values as real
+		$type:=$type=Is longint:K8:6 ? Is real:K8:4 : $type
 		
 		$test.type:=$test.type || $type
 		
@@ -228,12 +224,8 @@ Function isEqualTo($value; $type : Integer) : cs:C1710.ut
 		$type:=Value type:C1509($value)
 		$type:=$type=Is undefined:K8:13 ? Is null:K8:31 : $type
 		
-		If (Is compiled mode:C492(*))\
-			 && ($type=Is longint:K8:6)
-			
-			$type:=Is real:K8:4
-			
-		End if 
+		// Treat all numeric values as real
+		$type:=$type=Is longint:K8:6 ? Is real:K8:4 : $type
 		
 		$test.typeResult:=$test.typeResult || $type
 		
@@ -294,6 +286,12 @@ Function isNotEqualTo($value; $type : Integer) : cs:C1710.ut
 	Else 
 		
 		$test.typeResult:=$test.typeResult || Value type:C1509($value)
+		
+	End if 
+	
+	If (This:C1470._bypass($test))
+		
+		return This:C1470
 		
 	End if 
 	
@@ -476,6 +474,13 @@ Function isNotNull($value) : cs:C1710.ut
 	End if 
 	
 	$test.typeResult:=Is null:K8:31
+	
+	If (This:C1470._bypass($test))
+		
+		return This:C1470
+		
+	End if 
+	
 	$test.success:=Not:C34(This:C1470._null($test))
 	
 	If ($test.success)
@@ -555,6 +560,12 @@ Function isTruthy($value; $type : Integer) : cs:C1710.ut
 		End if 
 	End if 
 	
+	If (This:C1470._bypass($test))
+		
+		return This:C1470
+		
+	End if 
+	
 	$test.success:=Not:C34(This:C1470._falsy($test))
 	
 	If ($test.success)
@@ -632,6 +643,12 @@ Function isNotEmpty($value; $type : Integer) : cs:C1710.ut
 			$test.type:=$test.type=Null:C1517 ? Value type:C1509($value) : $test.type
 			
 		End if 
+	End if 
+	
+	If (This:C1470._bypass($test))
+		
+		return This:C1470
+		
 	End if 
 	
 	$test.success:=Not:C34(This:C1470._empty($test)) & ($test.error=Null:C1517)
@@ -728,22 +745,26 @@ Function _equal($value; $test : cs:C1710.test) : Boolean
 	$value:=This:C1470._value($value)
 	$test.result:=$value
 	
-	If (This:C1470._bypass($test))
-		
-		return True:C214  // Set the test.success to True
-		
-	End if 
-	
 	// Perform the comparison according to type
 	$test.typeResult:=$test.typeResult=Null:C1517 ? Value type:C1509($value) : $test.typeResult
 	
 	Case of 
 			
 			//______________________________________________________
+		: (This:C1470._bypass($test))
+			
+			return True:C214  // Set the test.success to True
+			
+			//______________________________________________________
 		: ($test.type#Null:C1517)\
 			 && ($test.type=Is time:K8:8)
 			
 			$test.success:=$test.expected=$value
+			
+			//______________________________________________________
+		: ($test.typeResult=Is null:K8:31)
+			
+			$test.success:=$test.expected=Null:C1517
 			
 			//______________________________________________________
 		: ($test.type#Null:C1517)\
@@ -1034,6 +1055,11 @@ Function _empty($test : cs:C1710.test) : Boolean
 	Case of 
 			
 			//______________________________________________________
+		: (This:C1470._bypass($test))
+			
+			return True:C214  // Set the test.success to True
+			
+			//______________________________________________________
 		: ($test.type=Is text:K8:3)
 			
 			return Length:C16($test.expected)=0
@@ -1157,23 +1183,26 @@ Function _bypass($test : cs:C1710.test) : Boolean
 			// <NOTHING MORE TO DO>
 			
 			//______________________________________________________
-		: (Is macOS:C1572 && ($test.os.indexOf("macOS")=-1))
+		: (Is macOS:C1572 && Not:C34($test.os.includes("macOS")))
 			
 			$test.bypassed:=True:C214
+			$test.success:=True:C214
 			$test.error:="Skipped on macOS"
 			return True:C214
 			
 			//______________________________________________________
-		: (Is Windows:C1573 && ($test.os.indexOf("Windows")=-1))
+		: (Is Windows:C1573 && Not:C34($test.os.includes("Windows")))
 			
 			$test.bypassed:=True:C214
+			$test.success:=True:C214
 			$test.error:="Skipped on Windows"
 			return True:C214
 			
 			//______________________________________________________
-		: (Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572) & ($test.os.indexOf("Linux")=-1))
+		: (Not:C34(Is Windows:C1573) & Not:C34(Is macOS:C1572) & Not:C34($test.os.includes("Linux")))
 			
 			$test.bypassed:=True:C214
+			$test.success:=True:C214
 			$test.error:="Skipped on Linux"
 			return True:C214
 			

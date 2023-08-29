@@ -17,8 +17,6 @@ $object:=New object:C1471("foo"; "bar")
 var $collection; $emptyCollection : Collection
 $collection:=New collection:C1472(1; 2; "foo")
 
-var $blob; $emptyBlob : Blob
-
 var $pointer : Pointer
 $pointer:=->vTime
 
@@ -291,3 +289,5 @@ $ut.test("mistmatch").noReport().expect($real).isEqualTo("33")
 ASSERT:C1129(Not:C34($ut.successful))
 ASSERT:C1129($ut.failed)
 ASSERT:C1129($ut.lastErrorText="[BUGS] mistmatch: TYPE MISMATCH - actual is 'Real' instead of 'Text'")
+
+BEEP:C151

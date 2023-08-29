@@ -215,16 +215,16 @@ ASSERT:C1129($test.error="[messages] Object (2) 1: ut.isFalse() cannot be applie
 $test:=$ut.test("Not Null").expect("").noReport().isNull().latest
 ASSERT:C1129($test.failed; "Should fail")
 ASSERT:C1129($test.isText; "Wrong type")
-ASSERT:C1129($test.error="[messages] Not Null: TYPE MISMATCH - actual is 'Text' instead of 'Null'")
+ASSERT:C1129($test.error="[messages] Not Null: returned a non-null value")
 
 $test:=$ut.test("Not Null (2)").expect(getText).noReport().isNull().latest
 ASSERT:C1129($test.failed; "Should fail")
 ASSERT:C1129($test.isText; "Wrong type")
-ASSERT:C1129($test.error="[messages] Not Null (2): TYPE MISMATCH - actual is 'Text' instead of 'Null'")
+ASSERT:C1129($test.error="[messages] Not Null (2): returned a non-null value")
 
 $test:=$ut.test("Not Null (3)").expect(getObject).noReport().isNull().latest
 ASSERT:C1129($test.isObject; "Wrong type")
-ASSERT:C1129($test.error="[messages] Not Null (3): TYPE MISMATCH - actual is 'Object' instead of 'Null'")
+ASSERT:C1129($test.error="[messages] Not Null (3): returned a non-null value")
 
 $test:=$ut.test("Null").expect(Null:C1517).noReport().isNotNull().latest
 ASSERT:C1129($test.failed; "Should fail")
