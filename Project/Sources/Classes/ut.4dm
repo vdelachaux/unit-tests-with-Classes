@@ -193,6 +193,28 @@ Function strict() : cs:C1710.ut
 	return This:C1470
 	
 	// === === === === === === === === === === === === === === === === ===
+	// Interrupts the batch execution: all the tests still to be executed are skipped
+Function abort($reason : Text) : cs:C1710.ut
+	
+	Use (Storage:C1525)
+		
+		If (Storage:C1525.abort=Null:C1517)
+			
+			Storage:C1525.abort:=New shared object:C1526
+			
+		End if 
+	End use 
+	
+	Use (Storage:C1525.abort)
+		
+		Storage:C1525.abort.requested:=True:C214
+		Storage:C1525.abort.reason:=$reason
+		
+	End use 
+	
+	return This:C1470
+	
+	// === === === === === === === === === === === === === === === === ===
 Function noReport() : cs:C1710.ut
 	
 	This:C1470.latest.noReport:=True:C214
@@ -2238,6 +2260,15 @@ Function _bypass($test : cs:C1710.test) : Boolean
 	Case of 
 			
 			//______________________________________________________
+		: (Storage:C1525.abort#Null:C1517) && (Bool:C1537(Storage:C1525.abort.requested))
+			
+			$test.bypassed:=True:C214
+			$test.success:=True:C214
+			$test.error:="Skipped, tests aborted: "+String:C10(Storage:C1525.abort.reason)
+			
+			return True:C214
+			
+			//______________________________________________________
 		: ($test.os=Null:C1517)
 			
 			return 
@@ -2362,29 +2393,22 @@ Function _reporter($assertion : Boolean)
 				
 			Else 
 				
-				var $t : Text:=This:C1470._getResult($test)
+				var $expected : Text:=This:C1470._getResult($test)
+				var $calculated : Text:=This:C1470._getExpected($test)
 				
-				If ($t="Formula@")
+				If ($calculated="Formula@")
 					
-					$test.error+=$t
+					$test.error+=$calculated
 					
 				Else 
 					
-					$test.error+="gives "+$t
+					$test.error+="gives "+$calculated
 					
 				End if 
 				
-				If ($test.type=Is null:K8:31)
-					
-					$test.error+=$test.not ? " when not " : " when "
-					
-				Else 
-					
-					$test.error+=" when "
-					
-				End if 
+				$test.error+=$test.not ? " when not " : " when "
 				
-				$test.error+=This:C1470._getExpected($test)
+				$test.error+=$expected
 				$test.error+=$test.strict ? " was strictly" : " was"
 				$test.error+=" expected"
 				
@@ -2615,7 +2639,15 @@ Function _stringify($value; $valueType; $quotted : Boolean) : Text
 	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 Function _header() : Text
 	
-	return "["+This:C1470.desc+"] "+This:C1470.latest.desc+": "
+	If (Match regex:C1019("(?mi-s)^Suite\\s\\d+$"; This:C1470.desc; 1; *))
+		
+		return This:C1470.latest.desc+": "
+		
+	Else 
+		
+		return "["+This:C1470.desc+"] "+This:C1470.latest.desc+": "
+		
+	End if 
 	
 	// *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 Function _quotted($in : Text) : Text

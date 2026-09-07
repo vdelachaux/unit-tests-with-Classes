@@ -7,12 +7,14 @@ The `ut` class is designed to manage unit testing.
 ### If the class is in the current project
 
 | |
-|---------||**cs**.ut.*new* ()<br>**cs**.ut.*new* ( `reporter`: **4D**.Function )
+|---------|
+|**cs**.ut.*new* ()<br>**cs**.ut.*new* ( `reporter`: **4D**.Function )
 
 ### If the class is in a component
 
 | |
-|---------||**cs**.\<name space>.ut.*new* ()<br>**cs**.\<name space>.ut.*new* ( `reporter`: **4D**.Function )
+|---------|
+|**cs**.\<name space>.ut.*new* ()<br>**cs**.\<name space>.ut.*new* ( `reporter`: **4D**.Function )
 
 ### *reporter*
 
@@ -76,6 +78,7 @@ The `reporter` must accept to parameters:
 |**.not** | Called before an [execution](#execution) function, reverses the comparison. <br>In other words, it allows you to check whether the test should fail.
 |**.strictly** | Called before an [execution](#execution) function, defines that the comparison will be diacritical if relevant.
 |**.try** | Called before an [execution](#execution) function, prevents the `reporter` from being invoked even if the [Test](./test.md) object is filled. In other words, no error will be reported, but if the test has failed, its `success` property will be **False** and its `error` property will be filled in with the error description..
+|**.abort** ({reason: `Text`}) | Interrupts the tests: every remaining test (in the current suite as well as in the ones not yet run) is skipped.<br>Use it when you detect an error, or a hardware/network incompatibility, that will make all the following tests fail anyway.
 
 💡 See [How to use keywords](#howTokeyword) for some examples.
 
@@ -171,13 +174,19 @@ $ut.test("is not empty blob").isNotEmpty($blob)
 ### <a name="howTokeyword">Use keywords</a>
 
 ```4d
-var $c : Collection:=[0; 1; 2; 3; 4]$ut.test().expect(10).not.in($c)$ut.test().not.expect("hello").in($c)
+var $c : Collection:=[0; 1; 2; 3; 4]
+$ut.test().expect(10).not.in($c)
+$ut.test().not.expect("hello").in($c)
 
 $ut.test().not.isFalse(Folder("/RESOURCES/"))
 
 $ut.test().not.expect(1).isEqualTo(Null)
 
-$ut.test("Text").expect("Hello World").strictly.isEqualTo("Hello World")$ut.test("Text").expect("Hello World").not.strictly.isEqualTo("HELLO WORLD")$ut.test("Collection").expect(["foo"; "bar"]).strictly.isEqualTo(["foo"; "bar"])$ut.test("Collection").expect(["foo"; "bar"]).not.strictly.isEqualTo(["foo"; "BAR"])
+$ut.test("Text").expect("Hello World").strictly.isEqualTo("Hello World")
+$ut.test("Text").expect("Hello World").not.strictly.isEqualTo("HELLO WORLD")
+
+$ut.test("Collection").expect(["foo"; "bar"]).strictly.isEqualTo(["foo"; "bar"])
+$ut.test("Collection").expect(["foo"; "bar"]).not.strictly.isEqualTo(["foo"; "BAR"])
 ```
 
 ### Use isTrue/isFalse with a File or a Folder
@@ -230,6 +239,17 @@ $ut.test("Text length").toLength("HELLO WORLD";11)
 
 ```4d
 $ut.test("Only on macOS").macOS().expect(True).isTrue() // This test will be skipped on Windows
+```
+
+### Abort the remaining tests
+
+```4d
+If (Not(myHardwareIsAvailable))
+	
+	$ut.test("Requires the hardware").abort("Hardware not available")
+	return // Nothing more to test here
+	
+ End if 
 ```
 
 ### Start a new suite in the same test method
