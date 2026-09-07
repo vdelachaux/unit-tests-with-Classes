@@ -1,6 +1,6 @@
 property desc : Text
 property type : Integer
-property bypassed; noReport; not; success; strict; try : Boolean
+property bypassed; noReport; not; success; strict; try; abortIfFailed : Boolean
 property expected; result : Variant
 property os : Collection
 property srcExpected; srcResult : Text

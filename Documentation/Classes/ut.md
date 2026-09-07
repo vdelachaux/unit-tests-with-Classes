@@ -79,6 +79,7 @@ The `reporter` must accept to parameters:
 |**.strictly** | Called before an [execution](#execution) function, defines that the comparison will be diacritical if relevant.
 |**.try** | Called before an [execution](#execution) function, prevents the `reporter` from being invoked even if the [Test](./test.md) object is filled. In other words, no error will be reported, but if the test has failed, its `success` property will be **False** and its `error` property will be filled in with the error description..
 |**.abort** ({reason: `Text`}) | Interrupts the tests: every remaining test (in the current suite as well as in the ones not yet run) is skipped.<br>Use it when you detect an error, or a hardware/network incompatibility, that will make all the following tests fail anyway.
+|**.abortIfFailed** | Called before an [execution](#execution) function, automatically calls `.abort()` with the test's error message if the test fails.
 
 💡 See [How to use keywords](#howTokeyword) for some examples.
 
@@ -250,6 +251,13 @@ If (Not(myHardwareIsAvailable))
 	return // Nothing more to test here
 	
  End if 
+```
+
+### Abort automatically when a test fails
+
+```4d
+// If this test fails, all the remaining tests are skipped
+$ut.test("Server reachable").abortIfFailed.isTrue(myPingServer())
 ```
 
 ### Start a new suite in the same test method
