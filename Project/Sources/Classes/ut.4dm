@@ -111,6 +111,15 @@ Function get try() : cs:C1710.ut
 	
 	return This:C1470
 	
+	// <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <== <==
+	// Automatically calls .abort() with the test error if the test fails
+Function get abortIfFailed() : cs:C1710.ut
+	
+	var $test : cs:C1710.test:=This:C1470.latest
+	$test.abortIfFailed:=True:C214
+	
+	return This:C1470
+	
 	//MARK:-Definition
 	// === === === === === === === === === === === === === === === === ===
 Function suite($desc : Text) : cs:C1710.ut
@@ -2310,6 +2319,12 @@ Function _resume($test : cs:C1710.test)
 		
 		This:C1470.failedTests.push($test)
 		
+		If ($test.abortIfFailed)
+			
+			This:C1470.abort($test.error)
+			
+		End if 
+		
 	End if 
 	
 	If ($test.noReport)\
@@ -2414,6 +2429,12 @@ Function _reporter($assertion : Boolean)
 				
 			End if 
 		End if 
+		
+	End if 
+	
+	If (Not:C34($assertion)) && ($test.abortIfFailed)
+		
+		This:C1470.abort($test.error)
 		
 	End if 
 	

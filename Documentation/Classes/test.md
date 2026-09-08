@@ -17,6 +17,7 @@ See [How to](#howTo)
 |**.error**| Text | The error description if the test failed
 |**.strict**| Boolean | **True** if the comparison is rigorous
 |**.bypassed**| Boolean | **True** if the test was bypassed. In this case, the `successfull` property is set to **True** and the `error` property contains the reason for the bypass. For example: *"Skipped on Windows"* if `macOS()` was called before execution and the test was run on a Windows machine.|
+|**.abortIfFailed**| Boolean | **True** if `.abortIfFailed` was called before execution: `.abort()` is automatically called with the test's error message if the test fails.
 |**.onMac**<br>**.onWindows**<br>**.onLinux**| Boolean | **True** if the test was not bypassed on the corresponding operating system.
 |**.isText**<br>**.isNumeric**<br>**.isReal**<br>**.isInteger**<br>**.isNull**<br>**.isUndefined**<br>**.isBoolean**<br>**.isPicture**<br>**.isBlob**<br>**.isObject**<br>**.isCollection**<br>**.isPointer**<br>**.isDate**<br>**.isTime**<br>**.isFile**<br>**.isFolder**| Boolean | **True** if the expected value is of the corresponding type.
 
@@ -32,5 +33,10 @@ $ut.suite("No report")
 // Prevent the display of the failed assertion
 $ut.test("Boolean").expect(True).noReport().isEqualTo(False)
 
-// Get the test objectvar $test : Object$test:=$ut.latestASSERT($test.failed)ASSERT($test.error="No report: 'Boolean' gives 'False' when 'True' was expected")
+// Get the test object
+var $test : Object
+$test:=$ut.latest
+
+ASSERT($test.failed)
+ASSERT($test.error="No report: 'Boolean' gives 'False' when 'True' was expected")
 ```

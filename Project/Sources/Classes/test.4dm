@@ -1,6 +1,6 @@
 property desc : Text
 property type : Integer
-property bypassed; noReport; not; success; strict; try : Boolean
+property bypassed; noReport; not; success; strict; try; abortIfFailed : Boolean
 property expected; result : Variant
 property os : Collection
 property srcExpected; srcResult : Text
@@ -12,23 +12,7 @@ Class constructor($desc : Text; $type)
 	
 	This:C1470.desc:=$desc
 	This:C1470.type:=$type
-	This:C1470.expected:=Null:C1517
-	This:C1470.result:=Null:C1517
-	This:C1470.typeResult:=Null:C1517
-	This:C1470.bypassed:=Null:C1517
-	This:C1470.noReport:=False:C215
-	This:C1470.not:=False:C215
-	This:C1470.try:=False:C215
-	This:C1470.success:=False:C215
-	This:C1470.strict:=False:C215
-	This:C1470.os:=Null:C1517
-	
-	This:C1470.srcExpected:=Null:C1517
-	This:C1470.srcResult:=Null:C1517
-	
-	This:C1470.error:=Null:C1517
 	This:C1470.keepError:=0  // Deferred flag
-	This:C1470.deferredError:=Null:C1517
 	
 	// === === === === === === === === === === === === === === === === ===
 Function setExpected($value; $type : Integer) : Variant
