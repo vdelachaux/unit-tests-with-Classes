@@ -20,6 +20,7 @@ See the [documentation](Documentation/Classes/ut.md) (also available via the Exp
 * Keywords to refine a test: `.not`, `.strictly`, `.try`
 * Per-platform tests with `.macOS()`, `.Windows()`, `.Linux()`
 * `.abort()` to interrupt the remaining tests as soon as an unrecoverable error is detected
+* `.abortIfFailed` to automatically call `.abort()` when a test fails
 * A custom `reporter` [formula](https://developer.4d.com/docs/API/FunctionClass) if you don't want to rely on `ASSERT`
 * No dependency: only two classes (`ut` and `test`) to copy into your project
 
@@ -53,6 +54,13 @@ If (Not(myHardwareIsAvailable))
 	return // Nothing more to test here
 	
 End if 
+```
+
+Use `.abortIfFailed` to abort automatically as soon as a given test fails:
+
+```4d
+// If this test fails, all the remaining tests are skipped
+$ut.test("Server reachable").abortIfFailed.isTrue(myPingServer())
 ```
 
 More sample code into the [class documentation](Documentation/Classes/ut.md) & the <a href="Project/Sources/Methods/test_ut_class.4dm">***test\_ut\_class***</a> method
